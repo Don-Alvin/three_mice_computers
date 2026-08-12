@@ -1,0 +1,9 @@
+/*
+ * Storefront stylesheet. Imported only by the (frontend) layout — the (payload)
+ * route group scopes its own styles, so Tailwind's preflight never reaches the
+ * admin panel.
+ *
+ * Brand tokens (colours, fonts, spacing from shop-ui-prototype.html) get
+ * defined in a @theme block when the design system lands in Milestone 4.
+ */
+@import 'tailwindcss';
