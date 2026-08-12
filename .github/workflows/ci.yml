@@ -13,8 +13,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Version comes from the "packageManager" field in package.json.
-      # Do not also pass a `version:` input here — action-setup errors on both.
+      # No `version:` input — it must not conflict with the "packageManager"
+      # field in package.json (pnpm/action-setup throws when the two differ).
       - uses: pnpm/action-setup@v4
 
       - uses: actions/setup-node@v4
@@ -28,7 +28,6 @@ jobs:
       - name: Typecheck
         run: pnpm exec tsc --noEmit
 
-      # `next lint` was removed in Next.js 16 — ESLint is invoked directly.
       - name: Lint
         run: pnpm exec eslint .
 
