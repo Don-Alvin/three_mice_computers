@@ -13,9 +13,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Version comes from the "packageManager" field in package.json.
+      # Do not also pass a `version:` input here — action-setup errors on both.
       - uses: pnpm/action-setup@v4
-        with:
-          version: 9
 
       - uses: actions/setup-node@v4
         with:
@@ -28,8 +28,9 @@ jobs:
       - name: Typecheck
         run: pnpm exec tsc --noEmit
 
+      # `next lint` was removed in Next.js 16 — ESLint is invoked directly.
       - name: Lint
-        run: pnpm exec next lint
+        run: pnpm exec eslint .
 
 # Phase 2: add a `test` job here (unit tests for payment/order logic)
 # and make it a required check alongside this one. Do not add a test
