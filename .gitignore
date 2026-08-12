@@ -1,0 +1,55 @@
+# ── Dependencies ─────────────────────────────────────────────
+/node_modules
+.pnp
+.pnp.js
+
+# ── Next.js build output ─────────────────────────────────────
+/.next/
+/out/
+/build
+/dist
+next-env.d.ts
+*.tsbuildinfo
+
+# ── Environment & secrets — NEVER commit ─────────────────────
+.env
+.env.*
+!.env.example
+
+# ── Payload / media ──────────────────────────────────────────
+# Local dev uploads only; real media lives in Vercel Blob / Supabase Storage
+/media
+
+# ── Logs & debug ─────────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# ── OS / editor ──────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# ── Testing / coverage ───────────────────────────────────────
+/coverage
+
+# ── Vercel ───────────────────────────────────────────────────
+.vercel
+
+# ── Commercial documents — keep OUT of the repo ──────────────
+# The client proposal (pricing/milestones) must not live in this
+# repository at all. This pattern is a safety net in case it is
+# ever copied in by mistake.
+*Proposal*.docx
+*proposal*.pdf
+*shop-ui-prototype*.html
+*implementation*.md
+
+# NOTE: /docs (implementation plan, prototype, reference material)
+# and CLAUDE.md are deliberately COMMITTED — do not add them here.
+# Claude Code reads CLAUDE.md from the repo; the docs are project
+# history and the agent's source of truth.
