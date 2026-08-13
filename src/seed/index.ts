@@ -10,9 +10,26 @@ import { formatSlug } from '../fields/slug'
  * Seeds the 21 categories, 10 brands and a set of dummy products from the
  * approved prototype (plan §10, milestone 2).
  *
- * Idempotent: every record is matched on its natural key (category/brand name,
- * product slug) and updated in place rather than duplicated, so `pnpm seed` can
- * be run repeatedly against the same database.
+ * This script only ever CREATES. Records are matched on their natural key
+ * (category/brand name, product slug) and any that already exist are left
+ * completely untouched — never updated, never overwritten.
+ *
+ * That distinction matters once the catalogue is real. Sending a full `data`
+ * object to `payload.update()` replaces array fields wholesale, so re-seeding
+ * would wipe an editor's uploaded product photos, description, specs and tags
+ * and restore the placeholder image and this file's invented copy. "Does not
+ * duplicate rows" is not the same guarantee as "does not destroy content".
+ *
+ * Consequence to be aware of: editing the seed data below will NOT propagate to
+ * a database that has already been seeded. Fix such records in the admin panel.
+ *
+ * The other route — reset the database and seed again — is
+ * `pnpm payload migrate:fresh --force-accept-warning`, and it is ONLY for a
+ * disposable local database. It drops every table, and the flag deliberately
+ * suppresses the confirmation prompt that would otherwise stop you. NEVER run it
+ * against production, a preview environment, or any database holding curated
+ * content: it destroys precisely the photos and copy this script goes out of its
+ * way not to touch.
  *
  * Deliberately does NOT create an admin user. The first admin is created
  * through Payload's own first-run screen at /admin so no password is ever
@@ -325,15 +342,9 @@ const seed = async (): Promise<void> => {
 
   // ---- Categories --------------------------------------------------------
   const categoryIds = new Map<string, number>()
+  let categoriesCreated = 0
 
   for (const [index, category] of categories.entries()) {
-    const data = {
-      name: category.name,
-      slug: formatSlug(category.name),
-      group: category.group,
-      order: (index + 1) * 10,
-    }
-
     const existing = await payload.find({
       collection: 'categories',
       where: { name: { equals: category.name } },
@@ -341,23 +352,34 @@ const seed = async (): Promise<void> => {
       depth: 0,
     })
 
+    // `order`, `image` and the SEO fields are editor-owned once the shop is
+    // live — re-seeding must not undo a manual reordering.
     if (existing.docs.length > 0) {
-      const updated = await payload.update({
-        collection: 'categories',
-        id: existing.docs[0].id,
-        data,
-      })
-      categoryIds.set(category.name, updated.id)
-    } else {
-      const created = await payload.create({ collection: 'categories', data })
-      categoryIds.set(category.name, created.id)
+      categoryIds.set(category.name, existing.docs[0].id)
+      continue
     }
+
+    const created = await payload.create({
+      collection: 'categories',
+      data: {
+        name: category.name,
+        slug: formatSlug(category.name),
+        group: category.group,
+        order: (index + 1) * 10,
+      },
+    })
+
+    categoryIds.set(category.name, created.id)
+    categoriesCreated += 1
   }
 
-  payload.logger.info(`Seeded ${categoryIds.size} categories.`)
+  payload.logger.info(
+    `Categories: ${categoriesCreated} created, ${categoryIds.size - categoriesCreated} already present (untouched).`,
+  )
 
   // ---- Brands ------------------------------------------------------------
   const brandIds = new Map<string, number>()
+  let brandsCreated = 0
 
   for (const name of brands) {
     const existing = await payload.find({
@@ -367,21 +389,28 @@ const seed = async (): Promise<void> => {
       depth: 0,
     })
 
+    // Leaves an uploaded brand logo alone.
     if (existing.docs.length > 0) {
       brandIds.set(name, existing.docs[0].id)
-    } else {
-      const created = await payload.create({
-        collection: 'brands',
-        data: { name, slug: formatSlug(name) },
-      })
-      brandIds.set(name, created.id)
+      continue
     }
+
+    const created = await payload.create({
+      collection: 'brands',
+      data: { name, slug: formatSlug(name) },
+    })
+
+    brandIds.set(name, created.id)
+    brandsCreated += 1
   }
 
-  payload.logger.info(`Seeded ${brandIds.size} brands.`)
+  payload.logger.info(
+    `Brands: ${brandsCreated} created, ${brandIds.size - brandsCreated} already present (untouched).`,
+  )
 
   // ---- Products ----------------------------------------------------------
-  let productCount = 0
+  let productsCreated = 0
+  let productsExisting = 0
 
   for (const product of products) {
     const categoryId = categoryIds.get(product.category)
@@ -396,23 +425,6 @@ const seed = async (): Promise<void> => {
 
     const slug = formatSlug(product.name)
 
-    const data = {
-      name: product.name,
-      slug,
-      description: richText(product.description),
-      price: product.price,
-      compareAtPrice: product.compareAtPrice ?? null,
-      images: [{ image: placeholderId }],
-      category: categoryId,
-      brand: brandId,
-      specs: product.specs ?? [],
-      stockStatus: product.stockStatus ?? ('in-stock' as const),
-      badge: product.badge ?? ('none' as const),
-      featured: product.featured ?? false,
-      published: true,
-      tags: product.tags ?? [],
-    }
-
     const existing = await payload.find({
       collection: 'products',
       where: { slug: { equals: slug } },
@@ -420,16 +432,39 @@ const seed = async (): Promise<void> => {
       depth: 0,
     })
 
+    // The single most destructive thing this script could do is overwrite a
+    // product an editor has curated. Once it exists, it is theirs.
     if (existing.docs.length > 0) {
-      await payload.update({ collection: 'products', id: existing.docs[0].id, data })
-    } else {
-      await payload.create({ collection: 'products', data })
+      productsExisting += 1
+      continue
     }
 
-    productCount += 1
+    await payload.create({
+      collection: 'products',
+      data: {
+        name: product.name,
+        slug,
+        description: richText(product.description),
+        price: product.price,
+        compareAtPrice: product.compareAtPrice ?? null,
+        images: [{ image: placeholderId }],
+        category: categoryId,
+        brand: brandId,
+        specs: product.specs ?? [],
+        stockStatus: product.stockStatus ?? ('in-stock' as const),
+        badge: product.badge ?? ('none' as const),
+        featured: product.featured ?? false,
+        published: true,
+        tags: product.tags ?? [],
+      },
+    })
+
+    productsCreated += 1
   }
 
-  payload.logger.info(`Seeded ${productCount} products.`)
+  payload.logger.info(
+    `Products: ${productsCreated} created, ${productsExisting} already present (untouched).`,
+  )
   payload.logger.info('Seed complete.')
 }
 
