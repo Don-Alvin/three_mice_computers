@@ -21,9 +21,15 @@ import { formatSlug } from '../fields/slug'
  * duplicate rows" is not the same guarantee as "does not destroy content".
  *
  * Consequence to be aware of: editing the seed data below will NOT propagate to
- * a database that has already been seeded. Fix such records in the admin panel,
- * or reset the database (`pnpm payload migrate:fresh --force-accept-warning`)
- * and seed again.
+ * a database that has already been seeded. Fix such records in the admin panel.
+ *
+ * The other route — reset the database and seed again — is
+ * `pnpm payload migrate:fresh --force-accept-warning`, and it is ONLY for a
+ * disposable local database. It drops every table, and the flag deliberately
+ * suppresses the confirmation prompt that would otherwise stop you. NEVER run it
+ * against production, a preview environment, or any database holding curated
+ * content: it destroys precisely the photos and copy this script goes out of its
+ * way not to touch.
  *
  * Deliberately does NOT create an admin user. The first admin is created
  * through Payload's own first-run screen at /admin so no password is ever
