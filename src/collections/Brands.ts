@@ -7,7 +7,7 @@ export const Brands: CollectionConfig = {
   slug: 'brands',
   admin: {
     useAsTitle: 'name',
-    defaultColumns: ['name', 'slug'],
+    defaultColumns: ['name', 'slug', 'order'],
     group: 'Catalogue',
   },
   access: {
@@ -28,6 +28,16 @@ export const Brands: CollectionConfig = {
       name: 'logo',
       type: 'upload',
       relationTo: 'media',
+    },
+    {
+      name: 'order',
+      type: 'number',
+      defaultValue: 0,
+      admin: {
+        position: 'sidebar',
+        description:
+          'Lower numbers show first, in the homepage brand strip and the footer. Curated merchandising order — biggest brands first, not alphabetical.',
+      },
     },
   ],
 }

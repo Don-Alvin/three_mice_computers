@@ -1,3 +1,4 @@
+import { ChevronDown, ShoppingCart } from 'lucide-react'
 import Link from 'next/link'
 import React from 'react'
 
@@ -78,18 +79,7 @@ export const SiteHeader = ({
             className="relative flex flex-col items-center gap-[3px] rounded-[9px] px-2.5 py-1.5 text-[11px] font-semibold text-charcoal"
             aria-hidden="true"
           >
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-            >
-              <circle cx="9" cy="20" r="1.6" />
-              <circle cx="18" cy="20" r="1.6" />
-              <path d="M2 3h3l2.4 12.5a1.5 1.5 0 0 0 1.5 1.2h8.7a1.5 1.5 0 0 0 1.5-1.2L22 7H6" />
-            </svg>
+            <ShoppingCart size={22} strokeWidth={1.8} />
             <span className="hidden menu:inline">Cart</span>
             <span className="absolute top-0 right-1 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-red px-1 text-[10px] font-bold text-white">
               0
@@ -106,7 +96,7 @@ export const SiteHeader = ({
             <li key={group.value} className="group relative flex items-center">
               <span className="flex h-full cursor-default items-center gap-[7px] px-4 text-sm font-semibold text-[#EDEDEE] transition-colors group-hover:bg-white/10">
                 {group.label}
-                <i aria-hidden="true" className="-mt-[3px] h-2 w-2 rotate-45 border-r-2 border-b-2 border-current opacity-60" />
+                <ChevronDown aria-hidden="true" size={14} strokeWidth={2.4} className="opacity-60" />
               </span>
               <div className="invisible absolute top-full left-0 z-40 min-w-[240px] translate-y-1.5 rounded-b-xl bg-white p-2 opacity-0 shadow-card transition-all group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
                 {group.categories.map((category) => (
@@ -125,7 +115,7 @@ export const SiteHeader = ({
           <li className="group relative flex items-center">
             <span className="flex h-full cursor-default items-center gap-[7px] px-4 text-sm font-semibold text-[#FFC9CF] transition-colors group-hover:bg-white/10">
               Shop by Brand
-              <i aria-hidden="true" className="-mt-[3px] h-2 w-2 rotate-45 border-r-2 border-b-2 border-current opacity-60" />
+              <ChevronDown aria-hidden="true" size={14} strokeWidth={2.4} className="opacity-60" />
             </span>
             <div className="invisible absolute top-full left-0 z-40 min-w-[240px] translate-y-1.5 rounded-b-xl bg-white p-2 opacity-0 shadow-card transition-all group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
               {brands.map((brand) => (

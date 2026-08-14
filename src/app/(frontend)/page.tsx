@@ -1,3 +1,4 @@
+import { CreditCard, MessageCircle, ShieldCheck, Truck } from 'lucide-react'
 import Link from 'next/link'
 import React from 'react'
 
@@ -9,11 +10,17 @@ import { getBrands, getCategories, getDealProducts, getFeaturedProducts } from '
 /** ISR, per plan §6. */
 export const revalidate = 300
 
+/**
+ * Trust row. One icon per item, matching the prototype's four glyphs (card,
+ * van, shield, chat) — not the same glyph four times. The first item's copy
+ * keeps the §8a reword: no card claim in Phase 1, even though the prototype's
+ * icon for that slot is a card.
+ */
 const TRUST = [
-  { title: 'M-Pesa on WhatsApp', copy: 'Pay the way you like' },
-  { title: 'Fast delivery', copy: 'Countrywide dispatch' },
-  { title: 'Genuine & warranty', copy: 'Authorized stock' },
-  { title: 'WhatsApp support', copy: 'Chat before you buy' },
+  { title: 'M-Pesa on WhatsApp', copy: 'Pay the way you like', Icon: CreditCard },
+  { title: 'Fast delivery', copy: 'Countrywide dispatch', Icon: Truck },
+  { title: 'Genuine & warranty', copy: 'Authorized stock', Icon: ShieldCheck },
+  { title: 'WhatsApp support', copy: 'Chat before you buy', Icon: MessageCircle },
 ]
 
 export default async function HomePage() {
@@ -95,8 +102,12 @@ export default async function HomePage() {
       </section>
 
       {/* ---- Categories ---- */}
-      <section className="wrap py-8">
-        <SectionHead title="Shop by category" />
+      {/*
+        "All categories →" anchors back to this grid rather than to a separate
+        index page: the grid already lists all 21 categories (plan §8a.1).
+      */}
+      <section id="categories" className="wrap scroll-mt-28 py-8">
+        <SectionHead title="Shop by category" href="/#categories" linkLabel="All categories" />
         <div className="grid grid-cols-2 gap-3 min-[560px]:grid-cols-4 lg:grid-cols-7">
           {categories.map((category) => (
             <Link
@@ -116,8 +127,8 @@ export default async function HomePage() {
       </section>
 
       {/* ---- Featured ---- */}
-      <section id="featured" className="wrap py-2 pb-8">
-        <SectionHead title="Featured products" />
+      <section id="featured" className="wrap scroll-mt-28 py-2 pb-8">
+        <SectionHead title="Featured products" href="/products" linkLabel="View all" />
         {featured.length > 0 ? (
           <div className="grid grid-cols-2 gap-4 min-[720px]:grid-cols-3 lg:grid-cols-4">
             {featured.map((product) => (
@@ -130,8 +141,9 @@ export default async function HomePage() {
       </section>
 
       {/* ---- Brands ---- */}
-      <section className="wrap py-2 pb-8">
-        <SectionHead title="Shop by brand" />
+      {/* "All brands →" anchors here for the same reason as the category grid. */}
+      <section id="brands" className="wrap scroll-mt-28 py-2 pb-8">
+        <SectionHead title="Shop by brand" href="/#brands" linkLabel="All brands" />
         <div className="grid grid-cols-3 gap-3 min-[520px]:grid-cols-5 lg:grid-cols-10">
           {brands.map((brand) => (
             <Link
@@ -148,7 +160,7 @@ export default async function HomePage() {
       {/* ---- Deals: products with a compare-at price (plan §8a) ---- */}
       {deals.length > 0 ? (
         <section className="wrap py-2 pb-8">
-          <SectionHead title="Hot deals" />
+          <SectionHead title="Hot deals" href="/deals" linkLabel="See all offers" />
           <div className="grid grid-cols-2 gap-4 min-[720px]:grid-cols-3 lg:grid-cols-4">
             {deals.map((product) => (
               <ProductCard key={product.id} product={product} />
@@ -166,17 +178,7 @@ export default async function HomePage() {
                 aria-hidden="true"
                 className="grid h-11 w-11 shrink-0 place-items-center rounded-[11px] bg-red-soft text-red"
               >
-                <svg
-                  width="22"
-                  height="22"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                >
-                  <path d="M12 2l8 3v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V5z" />
-                  <path d="M9 12l2 2 4-4" />
-                </svg>
+                <item.Icon size={22} strokeWidth={1.8} />
               </span>
               <div>
                 <b className="block text-sm text-charcoal">{item.title}</b>

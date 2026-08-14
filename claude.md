@@ -53,12 +53,14 @@ Milestones 4 and 6 are the visual/functional checkpoints the client reviews on t
 
 ## Project context
 
+- **Read `PROGRESS.md` FIRST** — it is the running state: which milestone we're on, what's verified, decisions already made (do not re-litigate them), and what's blocked on the client. Then read this file's rules, then `implementation.md`.
 - Read `implementation.md` before writing any code. It is the single source of truth for scope, stack, data model, and security posture.
-- The approved visual reference is `shop-ui-prototype.html` — match its layout, spacing, and styling in the Next.js build.
+- The approved visual reference is `shop-ui-prototype.html` — match its layout, spacing, and styling in the Next.js build. Note it is **homepage-only** (plan §8a.2).
+- **At the end of every milestone, update `PROGRESS.md`** per its §7 before handing back: milestone status, verification carry-forward, any new decisions with their reasoning, and open client items. The developer commits it, as with everything else.
 
 ## Scope discipline
 
-- Do not add dependencies, services, middleware, or "hardening" beyond what the plan specifies. Plan §5.4 lists things that are deliberately absent — do not add them. If something seems missing, **flag it in your summary rather than adding it**.
+- Do not add dependencies, services, middleware, or "hardening" beyond what the plan specifies. Plan §5.4 lists things that are deliberately absent — do not add them. **§5.4 targets security/infra layers against non-existent Phase 1 threats, NOT ordinary UI/build dependencies** — libraries the plan's features legitimately need (e.g. the icon libraries above) are fine and are recorded in Conventions. The test: a dep adding a *feature/UI the plan calls for* is allowed; a dep adding *defense against a threat Phase 1 doesn't have* is forbidden. If something seems missing or you're unsure, **flag it in your summary rather than adding it**.
 - Phase 2 items (payments, orders, 2FA, CAPTCHA, rate limiting, Cloudflare proxy, test suite) are out of scope. Do not scaffold, stub, or "prepare" them beyond what the plan explicitly says (e.g. keeping `CheckoutAction` isolated).
 - No customer PII is stored server-side in Phase 1. Do not add logging, analytics, or fields that capture customer names, phone numbers, or locations.
 
@@ -66,6 +68,7 @@ Milestones 4 and 6 are the visual/functional checkpoints the client reviews on t
 
 - **Next.js 16:** `params`/`searchParams` are async — `await` them in dynamic routes and `generateMetadata`. Lint via `eslint .` (no `next lint`). Images via `images.remotePatterns` (not `images.domains`).
 - TypeScript strict; components server-first — only cart UI and search input use `"use client"`.
+- **Icons:** `lucide-react` is the sanctioned UI-icon library (approved dependency — this is the one documented exception to §5.4's "no new deps"). Icons take the red token via `currentColor`. When resolving an icon by a dynamic key, use `createElement(resolve(key))`, NOT `const Icon = resolve(key); <Icon/>` — the latter trips `react-hooks/static-components`. **Lucide has no brand icons** (removed upstream): for Facebook/Instagram/WhatsApp (footer socials, hero WhatsApp glyph) use `simple-icons` / `@icons-pack/react-simple-icons` — also pre-approved for that purpose only. Shared glyphs across similar categories (all hard-disk types → `HardDrive`; both LAN cables → `EthernetPort`) are intentional and correct — the label disambiguates; do not swap in misleading glyphs for visual variety.
 - Prices are KES integers; display via `Intl.NumberFormat("en-KE")` → `KSh 12,345`.
 - Rich text renders through Payload's Lexical serializer — never `dangerouslySetInnerHTML`.
 - **Migrations:** production/preview config uses `push: false`. Any schema change is followed by `pnpm payload migrate:create` and the migration is committed **in the same change as the schema** (plan §3a). Local dev may use `push: true`. Never let migrations lag the schema into a later commit.

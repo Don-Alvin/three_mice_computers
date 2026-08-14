@@ -1,3 +1,4 @@
+import { Search } from 'lucide-react'
 import React from 'react'
 
 /**
@@ -20,19 +21,7 @@ export const SearchForm = ({
     role="search"
     className={`flex h-[46px] items-center rounded-[10px] border border-line bg-muted px-3.5 transition-colors focus-within:border-red ${className}`}
   >
-    <svg
-      width="19"
-      height="19"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      className="shrink-0 text-text-muted"
-      aria-hidden="true"
-    >
-      <circle cx="11" cy="11" r="7" />
-      <line x1="21" y1="21" x2="16.5" y2="16.5" />
-    </svg>
+    <Search size={19} strokeWidth={2} aria-hidden="true" className="shrink-0 text-text-muted" />
     <input
       type="search"
       name="q"

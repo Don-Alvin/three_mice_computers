@@ -71,6 +71,10 @@ const categories: CategorySeed[] = [
   { name: 'UPS', group: 'cables-power' },
 ]
 
+/**
+ * Curated merchandising order, matching the approved prototype's brand strip
+ * (plan §4). Array position becomes `brands.order`, so keep them in this order.
+ */
 const brands = ['HP', 'Dell', 'Lenovo', 'Epson', 'Havit', 'Anker', 'Ugreen', 'UNV', 'Amaya', 'Asta']
 
 type ProductSeed = {
@@ -381,7 +385,7 @@ const seed = async (): Promise<void> => {
   const brandIds = new Map<string, number>()
   let brandsCreated = 0
 
-  for (const name of brands) {
+  for (const [index, name] of brands.entries()) {
     const existing = await payload.find({
       collection: 'brands',
       where: { name: { equals: name } },
@@ -389,15 +393,17 @@ const seed = async (): Promise<void> => {
       depth: 0,
     })
 
-    // Leaves an uploaded brand logo alone.
+    // Leaves an uploaded brand logo — and any curated `order` — alone.
     if (existing.docs.length > 0) {
       brandIds.set(name, existing.docs[0].id)
       continue
     }
 
+    // `order` is set on create only. Brands seeded before the field existed keep
+    // order 0 and are sorted alphabetically until an editor sets them in admin.
     const created = await payload.create({
       collection: 'brands',
-      data: { name, slug: formatSlug(name) },
+      data: { name, slug: formatSlug(name), order: index },
     })
 
     brandIds.set(name, created.id)
