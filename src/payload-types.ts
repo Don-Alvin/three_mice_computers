@@ -284,6 +284,10 @@ export interface Brand {
    */
   slug: string;
   logo?: (number | null) | Media;
+  /**
+   * Lower numbers show first, in the homepage brand strip and the footer. Curated merchandising order — biggest brands first, not alphabetical.
+   */
+  order?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -454,6 +458,7 @@ export interface BrandsSelect<T extends boolean = true> {
   name?: T;
   slug?: T;
   logo?: T;
+  order?: T;
   updatedAt?: T;
   createdAt?: T;
 }

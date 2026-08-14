@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Three Mice Computers">
+  <!--
+    Placeholder favicon, matching the header's placeholder wordmark: the red
+    rounded tile with the ◈ mark. Replace with the real logo when the client
+    supplies one (plan §12a). The glyph is drawn as nested diamonds rather than
+    text, because font rendering in favicons is not dependable.
+    Red is the prototype's --red token, #E11128.
+  -->
+  <rect width="64" height="64" rx="16" fill="#E11128" />
+  <path d="M32 13 51 32 32 51 13 32Z" fill="#FFFFFF" />
+  <path d="M32 24 40 32 32 40 24 32Z" fill="#E11128" />
+</svg>

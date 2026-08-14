@@ -1,9 +1,29 @@
+import { Clock, Mail, MapPin, Phone } from 'lucide-react'
 import Link from 'next/link'
 import React from 'react'
 
 import type { Brand, Category } from '../payload-types'
 
 import { CONTACT_PLACEHOLDERS, SITE_DESCRIPTION, SITE_NAME } from '../lib/site'
+
+/**
+ * Contact-row icons (plan §8a.1). The prototype draws these as emoji; drawn as
+ * Lucide icons here so they take the red token and render identically on every
+ * platform, which emoji do not.
+ */
+const CONTACT_ICONS = {
+  phone: Phone,
+  email: Mail,
+  location: MapPin,
+  hours: Clock,
+}
+
+const iconProps = {
+  size: 15,
+  strokeWidth: 1.9,
+  'aria-hidden': true,
+  className: 'mt-0.5 shrink-0 text-red',
+} as const
 
 export const SiteFooter = ({
   categories,
@@ -20,6 +40,13 @@ export const SiteFooter = ({
           <p className="my-3.5 max-w-[34ch] text-[13.5px] leading-relaxed text-[#9C9EA4]">
             {SITE_DESCRIPTION}
           </p>
+          {/*
+            The prototype's three social buttons are deliberately NOT rendered:
+            the client's real Facebook/Instagram/WhatsApp handles are still an
+            open input (plan §12a), and §8a.1 rules out social links that go
+            nowhere. Add them here once the handles land — the prototype styles
+            them as 36px rounded tiles, bg rgba(255,255,255,.08), red on hover.
+          */}
         </div>
 
         <div>
@@ -58,10 +85,22 @@ export const SiteFooter = ({
           <h3 className="mb-4 font-display text-[15px] font-bold text-white">Get in touch</h3>
           {/* Placeholders — real details are a client input, collected before launch. */}
           <ul className="flex flex-col gap-2.5 text-[13.5px] text-[#B4B6BB]">
-            <li>{CONTACT_PLACEHOLDERS.phone}</li>
-            <li>{CONTACT_PLACEHOLDERS.email}</li>
-            <li>{CONTACT_PLACEHOLDERS.location}</li>
-            <li>{CONTACT_PLACEHOLDERS.hours}</li>
+            <li className="flex items-start gap-2.5">
+              <CONTACT_ICONS.phone {...iconProps} />
+              {CONTACT_PLACEHOLDERS.phone}
+            </li>
+            <li className="flex items-start gap-2.5">
+              <CONTACT_ICONS.email {...iconProps} />
+              {CONTACT_PLACEHOLDERS.email}
+            </li>
+            <li className="flex items-start gap-2.5">
+              <CONTACT_ICONS.location {...iconProps} />
+              {CONTACT_PLACEHOLDERS.location}
+            </li>
+            <li className="flex items-start gap-2.5">
+              <CONTACT_ICONS.hours {...iconProps} />
+              {CONTACT_PLACEHOLDERS.hours}
+            </li>
           </ul>
         </div>
       </div>

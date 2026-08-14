@@ -52,14 +52,23 @@ const emptyList = (page = 1): ProductList => ({
   totalProducts: 0,
 })
 
-/** Shared listing query so sorting and pagination behave identically everywhere. */
-const findProducts = async (where: Where, options: ProductListOptions = {}): Promise<ProductList> => {
+/**
+ * Shared listing query so sorting and pagination behave identically everywhere.
+ *
+ * `where` is optional: `/products` lists the whole catalogue, and passing an
+ * empty object inside `and` would leave an empty condition in the query rather
+ * than no condition at all.
+ */
+const findProducts = async (
+  where?: Where,
+  options: ProductListOptions = {},
+): Promise<ProductList> => {
   const { sort = 'newest', page = 1, limit = PAGE_SIZE } = options
   const payload = await getPayloadClient()
 
   const result = await payload.find({
     collection: 'products',
-    where: { and: [PUBLISHED, where] },
+    where: where ? { and: [PUBLISHED, where] } : PUBLISHED,
     sort: SORT_CLAUSES[sort],
     limit,
     page,
@@ -105,13 +114,20 @@ export const getCategoryBySlug = async (slug: string): Promise<Category | null> 
 
 // -------------------------------------------------------------------- brands
 
-/** All brands, alphabetical. Drives the brand strip and the brand menu. */
+/**
+ * All brands in curated merchandising order. Drives the brand strip, the brand
+ * menu and the footer (plan §4 — biggest brands first, NOT alphabetical).
+ *
+ * `name` is a secondary sort so the strip stays deterministic while brands share
+ * an `order` — including the case where none have been set yet, which degrades
+ * to plain alphabetical rather than to Postgres row order.
+ */
 export const getBrands = async (): Promise<Brand[]> => {
   const payload = await getPayloadClient()
 
   const result = await payload.find({
     collection: 'brands',
-    sort: 'name',
+    sort: ['order', 'name'],
     limit: 100,
     depth: 1,
   })
@@ -154,15 +170,26 @@ export const getFeaturedProducts = async (limit = 8): Promise<Product[]> => {
   return products
 }
 
+/** Products with a compare-at price, i.e. genuinely discounted (plan §8a). */
+const DISCOUNTED: Where = { compareAtPrice: { exists: true } }
+
 /**
- * Homepage "Hot deals" — products with a compare-at price, i.e. genuinely
- * discounted (plan §8a). Tied to real data rather than a manual flag.
+ * Homepage "Hot deals" teaser. Tied to real data rather than a manual flag.
+ * The full list lives at `/deals` — see `getDeals`.
  */
 export const getDealProducts = async (limit = 4): Promise<Product[]> => {
-  const { products } = await findProducts({ compareAtPrice: { exists: true } }, { limit })
+  const { products } = await findProducts(DISCOUNTED, { limit })
 
   return products
 }
+
+/** `/products` — the whole published catalogue (plan §6). */
+export const getAllProducts = async (options: ProductListOptions = {}): Promise<ProductList> =>
+  findProducts(undefined, options)
+
+/** `/deals` — every discounted product, the full version of the homepage teaser. */
+export const getDeals = async (options: ProductListOptions = {}): Promise<ProductList> =>
+  findProducts(DISCOUNTED, options)
 
 export const getProductsByCategory = async (
   categorySlug: string,
