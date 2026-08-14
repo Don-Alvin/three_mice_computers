@@ -56,7 +56,7 @@ Milestones 4 and 6 are the visual/functional checkpoints the client reviews on t
 - **Read `PROGRESS.md` FIRST** — it is the running state: which milestone we're on, what's verified, decisions already made (do not re-litigate them), and what's blocked on the client. Then read this file's rules, then `implementation.md`.
 - Read `implementation.md` before writing any code. It is the single source of truth for scope, stack, data model, and security posture.
 - The approved visual reference is `shop-ui-prototype.html` — match its layout, spacing, and styling in the Next.js build. Note it is **homepage-only** (plan §8a.2).
-- **At the end of every milestone, update `PROGRESS.md`** per its §7 before handing back: milestone status, verification carry-forward, any new decisions with their reasoning, and open client items. The developer commits it, as with everything else.
+- **At the end of every milestone, update `PROGRESS.md`** per its §7 before handing back: milestone status, verification carry-forward, any new decisions with their reasoning, and open client items. This file is not to be committed with other files, .gitignore it.
 
 ## Scope discipline
 
