@@ -34,8 +34,13 @@ export default async function ProductsPage({ searchParams }: PageProps) {
   return (
     <div className="wrap py-8">
       <h1 className="mb-2 font-display text-3xl font-extrabold tracking-[-0.5px]">All products</h1>
+      {/*
+        Deliberately says nothing about ordering: the sort is user-controlled and
+        the active option is already shown as a pressed pill above the grid, so
+        naming it here would only be a second copy to keep in sync.
+      */}
       <p className="mb-6 max-w-[60ch] text-sm text-text-muted">
-        Everything we stock, newest first. Use the category menu to narrow it down.
+        Everything we stock, in one place. Use the category menu to narrow it down.
       </p>
 
       <ProductListing
