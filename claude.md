@@ -19,6 +19,7 @@ This is the most important section in this file and it has no exceptions.
 
 ### Configuration
 - Do not modify git configuration, hooks, or remotes. Do not run `git init` anywhere.
+- **`PROGRESS.md` is gitignored and local-only.** You update it at milestone end (see Project context), but it is never staged, committed, or force-added. If it somehow appears in `git status`, that is a `.gitignore` problem — flag it, don't commit it.
 
 ### Allowed (read-only)
 `git status`, `git diff`, `git log`, `git show`, `git branch` (listing only). Use these to understand the repo state.
@@ -54,9 +55,10 @@ Milestones 4 and 6 are the visual/functional checkpoints the client reviews on t
 ## Project context
 
 - **Read `PROGRESS.md` FIRST** — it is the running state: which milestone we're on, what's verified, decisions already made (do not re-litigate them), and what's blocked on the client. Then read this file's rules, then `implementation.md`.
-- Read `implementation.md` before writing any code. It is the single source of truth for scope, stack, data model, and security posture.
+  **`PROGRESS.md` is LOCAL-ONLY and gitignored — never commit it, never stage it, never suggest committing it.** It is the developer's working state file, not a tracked artifact. It lives in the working directory; it will not appear in `git status` and must not be added with `git add -f` or any other means.
+- Read `implementation.md` before writing any code. It is the single source of truth for scope, stack, data model, and security posture. (This one IS tracked/committed.)
 - The approved visual reference is `shop-ui-prototype.html` — match its layout, spacing, and styling in the Next.js build. Note it is **homepage-only** (plan §8a.2).
-- **At the end of every milestone, update `PROGRESS.md`** per its §7 before handing back: milestone status, verification carry-forward, any new decisions with their reasoning, and open client items. The developer commits it, as with everything else.
+- **At the end of every milestone, update `PROGRESS.md`** per its §7 before handing back: milestone status, verification carry-forward, any new decisions with their reasoning, and open client items. Edit it in place and mention in your summary that you updated it — but do NOT stage or commit it, and do not include it in any "files changed" list you suggest committing.
 
 ## Scope discipline
 
