@@ -29,19 +29,76 @@ export const CartDrawer = () => {
   const hydrated = useCartHydrated()
 
   const closeButton = useRef<HTMLButtonElement>(null)
+  const panel = useRef<HTMLElement>(null)
 
   useEffect(() => {
     if (!isOpen) {
       return
     }
 
-    // Escape closes, and the page behind must not scroll under the drawer.
+    const panelEl = panel.current
+
+    // Captured BEFORE focus moves to the close button, so this is genuinely the
+    // control that opened the drawer (the header cart button).
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null
+
+    /**
+     * Queried per keypress rather than cached: the set changes between the empty
+     * state (close button only) and a full cart, and the stepper's `+` drops out
+     * of it once a line hits MAX_QTY.
+     */
+    const focusable = (): HTMLElement[] =>
+      panelEl
+        ? Array.from(
+            panelEl.querySelectorAll<HTMLElement>(
+              'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+            ),
+          )
+        : []
+
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         closeCart()
+
+        return
+      }
+
+      if (event.key !== 'Tab' || !panelEl) {
+        return
+      }
+
+      const items = focusable()
+
+      if (items.length === 0) {
+        event.preventDefault()
+
+        return
+      }
+
+      const first = items[0]
+      const last = items[items.length - 1]
+      const active = document.activeElement
+
+      // `aria-modal="true"` below tells assistive tech the rest of the page is
+      // unreachable. Without this the attribute is simply untrue: Tab walks out
+      // into the header, the product grid and the footer behind the scrim.
+      if (!panelEl.contains(active)) {
+        event.preventDefault()
+        first.focus()
+
+        return
+      }
+
+      if (event.shiftKey && active === first) {
+        event.preventDefault()
+        last.focus()
+      } else if (!event.shiftKey && active === last) {
+        event.preventDefault()
+        first.focus()
       }
     }
 
+    // The page behind must not scroll under the drawer.
     const previousOverflow = document.body.style.overflow
 
     document.body.style.overflow = 'hidden'
@@ -51,6 +108,17 @@ export const CartDrawer = () => {
     return () => {
       document.body.style.overflow = previousOverflow
       document.removeEventListener('keydown', onKeyDown)
+
+      // Hand focus back to the opener, so closing returns a keyboard user to
+      // where they were instead of the top of the document. Guarded: only
+      // reclaim focus that is still the drawer's to give — if a navigation or
+      // anything else has legitimately taken it, leave it alone.
+      const active = document.activeElement
+      const focusIsOurs = !active || active === document.body || panelEl?.contains(active)
+
+      if (opener && focusIsOurs && document.body.contains(opener)) {
+        opener.focus()
+      }
     }
   }, [isOpen, closeCart])
 
@@ -69,6 +137,7 @@ export const CartDrawer = () => {
       />
 
       <aside
+        ref={panel}
         role="dialog"
         aria-modal="true"
         aria-label="Your cart"
