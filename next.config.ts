@@ -7,6 +7,13 @@ const __filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(__filename)
 
 const nextConfig: NextConfig = {
+  // Next's dev server otherwise re-stamps an agent-rules block into CLAUDE.md on
+  // every run (default `true`), and that injected text tells the agent to commit
+  // it — which CLAUDE.md's git rules forbid. Turning it off stops the recurring
+  // phantom diff at source. Version-matched Next docs are still readable at
+  // node_modules/next/dist/docs/ without the file being rewritten.
+  agentRules: false,
+
   images: {
     localPatterns: [
       {

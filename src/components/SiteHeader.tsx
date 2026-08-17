@@ -1,4 +1,4 @@
-import { ChevronDown, ShoppingCart } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
 import Link from 'next/link'
 import React from 'react'
 
@@ -6,6 +6,7 @@ import type { Brand } from '../payload-types'
 
 import type { CategoryGroup } from '../lib/nav'
 import { ANNOUNCEMENTS, SITE_NAME, SITE_TAGLINE } from '../lib/site'
+import { CartButton } from './cart/CartButton'
 import { SearchForm } from './SearchForm'
 
 /**
@@ -70,21 +71,8 @@ export const SiteHeader = ({
         />
 
         <div className="ml-auto flex shrink-0 items-center gap-2 menu:ml-0">
-          {/*
-            Cart UI is Milestone 5. Rendered here so the header matches the
-            approved prototype, but deliberately inert: /cart does not exist yet
-            and a link would 404 during the client's M4 preview.
-          */}
-          <span
-            className="relative flex flex-col items-center gap-[3px] rounded-[9px] px-2.5 py-1.5 text-[11px] font-semibold text-charcoal"
-            aria-hidden="true"
-          >
-            <ShoppingCart size={22} strokeWidth={1.8} />
-            <span className="hidden menu:inline">Cart</span>
-            <span className="absolute top-0 right-1 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-red px-1 text-[10px] font-bold text-white">
-              0
-            </span>
-          </span>
+          {/* The one client component in the header — everything else stays server-rendered. */}
+          <CartButton />
         </div>
       </div>
     </header>

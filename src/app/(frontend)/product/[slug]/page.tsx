@@ -8,6 +8,7 @@ import React from 'react'
 
 import type { Product } from '@/payload-types'
 
+import { AddToCartButton } from '@/components/cart/AddToCartButton'
 import { getProductBySlug } from '@/lib/catalogue'
 import { discountPercent, formatKES } from '@/lib/format'
 import { resolveImage } from '@/lib/media'
@@ -164,16 +165,17 @@ export default async function ProductPage({ params }: PageProps) {
             {stock.label}
           </p>
 
-          {/*
-            Add-to-cart is Milestone 5 — no cart store exists yet. Rendered for
-            the approved layout but inert.
-          */}
-          <span
-            aria-hidden="true"
-            className="mt-6 flex w-full max-w-sm items-center justify-center gap-2 rounded-[11px] bg-ink px-4 py-3.5 text-[15px] font-bold text-white"
-          >
-            Add to cart
-          </span>
+          <AddToCartButton
+            variant="detail"
+            item={{
+              id: product.id,
+              slug: product.slug,
+              name: product.name,
+              price: product.price,
+              image: resolveImage(product.images?.[0]?.image, 'thumbnail')?.url ?? '',
+            }}
+            stockStatus={product.stockStatus}
+          />
 
           {product.description ? (
             <div className="mt-8 max-w-[60ch] text-[15px] leading-relaxed text-charcoal [&_a]:text-red [&_a]:underline [&_p]:mb-3">
