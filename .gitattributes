@@ -1,0 +1,15 @@
+# Normalize line endings — stops CRLF-only phantom diffs on Windows
+# (e.g. src/payload-types.ts showing as modified with an empty content diff).
+# After adding this file, run once:  git add --renormalize .
+* text=auto eol=lf
+
+# Binary — never normalize
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.pdf binary
