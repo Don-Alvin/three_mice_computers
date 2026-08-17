@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import React from 'react'
 
+import { CartDrawer } from '@/components/cart/CartDrawer'
+import { Toast } from '@/components/cart/Toast'
 import { SiteFooter } from '@/components/SiteFooter'
 import { SiteHeader } from '@/components/SiteHeader'
 import { getBrands, getCategories } from '@/lib/catalogue'
@@ -31,6 +33,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <SiteHeader groups={groups} brands={brands} />
         <main className="flex-1">{children}</main>
         <SiteFooter categories={categories} brands={brands} />
+        {/* Mounted once here so both are available from every page (§8a). */}
+        <CartDrawer />
+        <Toast />
       </body>
     </html>
   )

@@ -6,6 +6,7 @@ import type { Product } from '../payload-types'
 
 import { discountPercent, formatKES } from '../lib/format'
 import { resolveImage } from '../lib/media'
+import { AddToCartButton } from './cart/AddToCartButton'
 
 const STOCK_LABELS: Record<Product['stockStatus'], string | null> = {
   'in-stock': null, // no badge when everything is normal (plan §8)
@@ -102,16 +103,18 @@ export const ProductCard = ({ product }: { product: Product }) => {
           ) : null}
         </div>
 
-        {/*
-          Add-to-cart is Milestone 5. Rendered so the card matches the approved
-          prototype, but inert — there is no cart store yet. See summary.
-        */}
-        <span
-          aria-hidden="true"
-          className="mt-1.5 flex items-center justify-center gap-2 rounded-[9px] bg-ink px-3 py-2.5 text-[13.5px] font-bold text-white"
-        >
-          Add to cart
-        </span>
+        <AddToCartButton
+          item={{
+            id: product.id,
+            slug: product.slug,
+            name: product.name,
+            price: product.price,
+            // The cart renders a 62px tile, so it stores the thumbnail rather
+            // than the card-sized render this component displays.
+            image: resolveImage(product.images?.[0]?.image, 'thumbnail')?.url ?? '',
+          }}
+          stockStatus={product.stockStatus}
+        />
       </div>
     </article>
   )
