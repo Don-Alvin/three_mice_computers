@@ -27,9 +27,13 @@ const ReconcileNotes = () => {
       role="alert"
       className="mb-5 rounded-xl border border-red/30 bg-red-soft px-4 py-3 text-[13px] leading-relaxed text-red-dark"
     >
+      {/*
+        Deliberately not "prices changed": these notes also cover items removed as
+        unavailable or out of stock, and items the shop has retitled.
+      */}
       <p className="mb-1 flex items-center gap-2 font-bold">
         <AlertTriangle size={15} strokeWidth={2.4} aria-hidden="true" />
-        The shop&apos;s prices changed since you added these
+        Your cart was updated to match the shop
       </p>
       <ul className="list-disc pl-5">
         {notes.map((note) => (

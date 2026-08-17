@@ -151,6 +151,7 @@ export const useCart = create<CartState>()(
         const byId = new Map(verified.map((item) => [item.id, item]))
         const removed: ReconcileResult['removed'] = []
         const repriced: ReconcileResult['repriced'] = []
+        const renamed: ReconcileResult['renamed'] = []
         const next: CartItem[] = []
 
         // Iterating the cart, not the response, keeps the shopper's own ordering.
@@ -172,14 +173,23 @@ export const useCart = create<CartState>()(
             repriced.push({ name: server.name, from: line.price, to: server.price })
           }
 
-          // Name and slug are refreshed too: a renamed product should not go to
-          // WhatsApp under its old name, and a changed slug would 404 the link.
+          // Recorded *before* the overwrite below, which is the only place the old
+          // title still exists. A rename usually means something — "(Refurbished)",
+          // a corrected capacity — so it gets the same review step as a reprice
+          // rather than going to WhatsApp unremarked.
+          if (server.name !== line.name) {
+            renamed.push({ from: line.name, to: server.name })
+          }
+
+          // Name and slug both refreshed: the order must not go out under a stale
+          // title, and a changed slug would 404 the product link. The slug change
+          // needs no note — taking it silently is what keeps the link working.
           next.push({ ...line, name: server.name, slug: server.slug, price: server.price })
         }
 
         set({ items: next })
 
-        return { removed, repriced }
+        return { removed, repriced, renamed }
       },
 
       setReconcileNotes: (notes) => {

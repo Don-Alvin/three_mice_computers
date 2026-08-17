@@ -98,7 +98,7 @@ export const CheckoutAction = () => {
 
     const result = reconcile(verified.items)
 
-    if (result.removed.length > 0 || result.repriced.length > 0) {
+    if (result.removed.length > 0 || result.repriced.length > 0 || result.renamed.length > 0) {
       setReconcileNotes([
         ...result.removed.map(({ name, reason }) =>
           reason === 'out-of-stock'
@@ -108,6 +108,10 @@ export const CheckoutAction = () => {
         ...result.repriced.map(
           ({ name, from, to }) =>
             `${name} is now ${formatKES(to)} (was ${formatKES(from)}). Your cart has been updated.`,
+        ),
+        // The old title first, since that is the one the shopper recognises.
+        ...result.renamed.map(
+          ({ from, to }) => `“${from}” is now listed as “${to}”. Your cart has been updated.`,
         ),
       ])
 
