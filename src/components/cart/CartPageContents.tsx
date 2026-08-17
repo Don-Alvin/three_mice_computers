@@ -1,5 +1,6 @@
 'use client'
 
+import { AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 import React from 'react'
 
@@ -8,6 +9,40 @@ import { formatKES } from '@/lib/format'
 import { CartLine } from './CartLine'
 import { CheckoutAction } from './CheckoutAction'
 import { EmptyCart } from './EmptyCart'
+
+/**
+ * What `/api/verify-cart` changed, rendered above the cart rather than beside the
+ * checkout button — reconciliation can empty the cart, and the shopper must still
+ * be told why instead of finding a bare "Your cart is empty" (§5.2).
+ */
+const ReconcileNotes = () => {
+  const notes = useCart((state) => state.reconcileNotes)
+
+  if (notes.length === 0) {
+    return null
+  }
+
+  return (
+    <div
+      role="alert"
+      className="mb-5 rounded-xl border border-red/30 bg-red-soft px-4 py-3 text-[13px] leading-relaxed text-red-dark"
+    >
+      {/*
+        Deliberately not "prices changed": these notes also cover items removed as
+        unavailable or out of stock, and items the shop has retitled.
+      */}
+      <p className="mb-1 flex items-center gap-2 font-bold">
+        <AlertTriangle size={15} strokeWidth={2.4} aria-hidden="true" />
+        Your cart was updated to match the shop
+      </p>
+      <ul className="list-disc pl-5">
+        {notes.map((note) => (
+          <li key={note}>{note}</li>
+        ))}
+      </ul>
+    </div>
+  )
+}
 
 /**
  * Body of `/cart` — the full page where checkout happens (plan §6/§7).
@@ -34,11 +69,20 @@ export const CartPageContents = () => {
   }
 
   if (items.length === 0) {
-    return <EmptyCart variant="page" />
+    return (
+      <>
+        <ReconcileNotes />
+        <EmptyCart variant="page" />
+      </>
+    )
   }
 
   return (
     <div className="grid items-start gap-8 lg:grid-cols-[1.7fr_1fr]">
+      <div className="lg:col-span-2">
+        <ReconcileNotes />
+      </div>
+
       <div className="rounded-2xl border border-line bg-surface px-5 py-1">
         <ul>
           {items.map((line) => (
