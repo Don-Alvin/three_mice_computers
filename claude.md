@@ -19,7 +19,7 @@ This is the most important section in this file and it has no exceptions.
 
 ### Configuration
 - Do not modify git configuration, hooks, or remotes. Do not run `git init` anywhere.
-- **`progress.md` is gitignored and local-only.** You update it at milestone end (see Project context), but it is never staged, committed, or force-added. If it somehow appears in `git status`, that is a `.gitignore` problem — flag it, don't commit it.
+- **`PROGRESS.md` is gitignored and local-only.** You update it at milestone end (see Project context), but it is never staged, committed, or force-added. If it somehow appears in `git status`, that is a `.gitignore` problem — flag it, don't commit it.
 
 ### Allowed (read-only)
 `git status`, `git diff`, `git log`, `git show`, `git branch` (listing only). Use these to understand the repo state.
@@ -54,11 +54,11 @@ Milestones 4 and 6 are the visual/functional checkpoints the client reviews on t
 
 ## Project context
 
-- **Read `progress.md` FIRST** — it is the running state: which milestone we're on, what's verified, decisions already made (do not re-litigate them), and what's blocked on the client. Then read this file's rules, then `implementation.md`.
-  **`progress.md` is LOCAL-ONLY and gitignored — never commit it, never stage it, never suggest committing it.** It is the developer's working state file, not a tracked artifact. It lives in the working directory; it will not appear in `git status` and must not be added with `git add -f` or any other means.
+- **Read `PROGRESS.md` FIRST** — it is the running state: which milestone we're on, what's verified, decisions already made (do not re-litigate them), and what's blocked on the client. Then read this file's rules, then `implementation.md`.
+  **`PROGRESS.md` is LOCAL-ONLY and gitignored — never commit it, never stage it, never suggest committing it.** It is the developer's working state file, not a tracked artifact. It lives in the working directory; it will not appear in `git status` and must not be added with `git add -f` or any other means.
 - Read `implementation.md` before writing any code. It is the single source of truth for scope, stack, data model, and security posture. (This one IS tracked/committed.)
 - The approved visual reference is `shop-ui-prototype.html` — match its layout, spacing, and styling in the Next.js build. It covers the **homepage, the cart drawer, and the mobile menu** — including the drawer's *interaction behaviour*, not just its styling. Everything else (category, brand, product, search, `/products`, `/deals`, `/cart`) has **no approved reference** and is new design needing client sign-off (plan §8a.2).
-- **At the end of every milestone, update `progress.md`** per its §7 before handing back: milestone status, verification carry-forward, any new decisions with their reasoning, and open client items. Edit it in place and mention in your summary that you updated it — but do NOT stage or commit it, and do not include it in any "files changed" list you suggest committing.
+- **At the end of every milestone, update `PROGRESS.md`** per its §7 before handing back: milestone status, verification carry-forward, any new decisions with their reasoning, and open client items. Edit it in place and mention in your summary that you updated it — but do NOT stage or commit it, and do not include it in any "files changed" list you suggest committing.
 
 ## Scope discipline
 
@@ -76,10 +76,12 @@ Milestones 4 and 6 are the visual/functional checkpoints the client reviews on t
 - **Icons:** `lucide-react` is the sanctioned UI-icon library (approved dependency — this is the one documented exception to §5.4's "no new deps"). Icons take the red token via `currentColor`. When resolving an icon by a dynamic key, use `createElement(resolve(key))`, NOT `const Icon = resolve(key); <Icon/>` — the latter trips `react-hooks/static-components`. **Lucide has no brand icons** (removed upstream): for Facebook/Instagram/WhatsApp (footer socials, hero WhatsApp glyph) use `simple-icons` / `@icons-pack/react-simple-icons` — also pre-approved for that purpose only. Shared glyphs across similar categories (all hard-disk types → `HardDrive`; both LAN cables → `EthernetPort`) are intentional and correct — the label disambiguates; do not swap in misleading glyphs for visual variety.
 - Prices are KES integers; display via `Intl.NumberFormat("en-KE")` → `KSh 12,345`.
 - Rich text renders through Payload's Lexical serializer — never `dangerouslySetInnerHTML`.
-- **Migrations:** `push: false` **everywhere, including local dev** — this project does not use push mode (see progress §4). Any schema change is followed by `pnpm payload migrate:create` and the migration is committed **in the same change as the schema** (plan §3a). Never let migrations lag the schema into a later commit. The reset path for a diverged local DB is `migrate:fresh`. Migrations stay generated — no hand-added guard logic.
+- **Migrations:** `push: false` **everywhere, including local dev** — this project does not use push mode (see PROGRESS §4). Any schema change is followed by `pnpm payload migrate:create` and the migration is committed **in the same change as the schema** (plan §3a). Never let migrations lag the schema into a later commit. The reset path for a diverged local DB is `migrate:fresh`. Migrations stay generated — no hand-added guard logic.
 - **Generated files** `src/migrations/*` and `src/payload-types.ts` are committed. Regenerate types (`pnpm payload generate:types`) whenever collections change.
 - **Prices** are KES integers enforced by a `validate` fn (`Number.isInteger`) on `price` and `compareAtPrice` — a bare `number` field accepts decimals, so the guard must be explicit.
 - **Published-read access** on public collections must return a `where` filter (`{ published: { equals: true } }`) for unauthenticated reads, never a boolean — a boolean exposes unpublished rows.
+- **The local API bypasses access control.** `getPayloadClient()` does NOT get the published-read protection. Every local-API query on `products` must carry `published: { equals: true }` explicitly — in `verify-cart` and in every data-layer helper (listings, detail, search, `/products`, `/deals`, homepage sections). Silent failure: invisible while all data is published.
+- **`window.open(url, '_blank', 'noopener')` returns `null` on success too** — never branch on it to detect a blocked popup. Show a neutral "ready" state plus an always-present manual link.
 - The WhatsApp order message is always built from `/api/verify-cart` server responses, never from localStorage values.
 - Secrets live in environment variables only. Never write real values into code, examples, or this repo — use placeholders, and keep `.env.example` up to date when you add a variable.
 - **Email:** the Resend adapter (`@payloadcms/email-resend`) is added at **M8** (not during the build) for Payload's built-in **auth emails** (password reset/verification). Do NOT build order/notification emails at any point — those are out of scope (plan §13). Do NOT wire Resend before M8.

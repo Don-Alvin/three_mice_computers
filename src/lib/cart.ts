@@ -4,6 +4,8 @@ import { useSyncExternalStore } from 'react'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
+import { MAX_CART_LINES, type ReconcileResult, type VerifiedItem } from './verify-cart'
+
 /**
  * Cart store (plan §7).
  *
@@ -26,12 +28,13 @@ export type CartItem = {
 export type CartItemInput = Omit<CartItem, 'qty'>
 
 /**
- * `/api/verify-cart` rejects more than 50 ids (§5.2), so the cart refuses the
- * 51st distinct product rather than letting someone build a cart that cannot be
- * checked out. Quantity is capped per line purely to keep a stray keypress from
- * producing an absurd order.
+ * `/api/verify-cart` rejects more than `MAX_CART_LINES` ids (§5.2), so the cart
+ * refuses one more distinct product than that rather than letting someone build
+ * a cart that can never check out. Imported rather than re-declared, so the
+ * guard and the limit it protects cannot drift. Quantity is capped per line
+ * purely to keep a stray keypress from producing an absurd order.
  */
-export const MAX_LINES = 50
+export { MAX_CART_LINES as MAX_LINES }
 export const MAX_QTY = 99
 
 export type AddResult = 'added' | 'increased' | 'cart-full'
@@ -43,6 +46,13 @@ type CartState = {
   items: CartItem[]
   isOpen: boolean
   notice: CartNotice | null
+  /**
+   * What reconciliation changed, in plain sentences. Lives on the store rather
+   * than inside `CheckoutAction` because reconciliation can empty the cart, at
+   * which point the checkout UI unmounts — and the shopper would be left staring
+   * at "Your cart is empty" with no idea why.
+   */
+  reconcileNotes: string[]
   addItem: (item: CartItemInput, qty?: number) => AddResult
   removeItem: (id: number) => void
   setQty: (id: number, qty: number) => void
@@ -50,6 +60,9 @@ type CartState = {
   openCart: () => void
   closeCart: () => void
   clearNotice: () => void
+  /** Apply server truth to the cart (§5.2). Returns what it changed. */
+  reconcile: (verified: VerifiedItem[]) => ReconcileResult
+  setReconcileNotes: (notes: string[]) => void
 }
 
 let noticeId = 0
@@ -71,12 +84,13 @@ export const useCart = create<CartState>()(
       items: [],
       isOpen: false,
       notice: null,
+      reconcileNotes: [],
 
       addItem: (item, qty = 1) => {
         const { items } = get()
         const existing = items.find((line) => line.id === item.id)
 
-        if (!existing && items.length >= MAX_LINES) {
+        if (!existing && items.length >= MAX_CART_LINES) {
           return 'cart-full'
         }
 
@@ -131,6 +145,45 @@ export const useCart = create<CartState>()(
 
       clearNotice: () => {
         set({ notice: null })
+      },
+
+      reconcile: (verified) => {
+        const byId = new Map(verified.map((item) => [item.id, item]))
+        const removed: ReconcileResult['removed'] = []
+        const repriced: ReconcileResult['repriced'] = []
+        const next: CartItem[] = []
+
+        // Iterating the cart, not the response, keeps the shopper's own ordering.
+        for (const line of get().items) {
+          const server = byId.get(line.id)
+
+          // Absent from the response = deleted, unpublished, or never existed.
+          if (!server) {
+            removed.push({ name: line.name, reason: 'unavailable' })
+            continue
+          }
+
+          if (server.stockStatus === 'out-of-stock') {
+            removed.push({ name: server.name, reason: 'out-of-stock' })
+            continue
+          }
+
+          if (server.price !== line.price) {
+            repriced.push({ name: server.name, from: line.price, to: server.price })
+          }
+
+          // Name and slug are refreshed too: a renamed product should not go to
+          // WhatsApp under its old name, and a changed slug would 404 the link.
+          next.push({ ...line, name: server.name, slug: server.slug, price: server.price })
+        }
+
+        set({ items: next })
+
+        return { removed, repriced }
+      },
+
+      setReconcileNotes: (notes) => {
+        set({ reconcileNotes: notes })
       },
     }),
     {
