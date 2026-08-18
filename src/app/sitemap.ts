@@ -76,16 +76,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/deals`, changeFrequency: 'daily', priority: 0.8 },
   ]
 
-  const total = staticRoutes.length + categories.docs.length + brands.docs.length + products.docs.length
-
-  // Loud rather than silent: a truncated sitemap looks perfectly healthy.
-  if (total >= SITEMAP_URL_LIMIT) {
-    payload.logger.warn(
-      `Sitemap reached the ${SITEMAP_URL_LIMIT}-URL protocol limit (${total} routes). Public URLs are being dropped — split into a sitemap index with generateSitemaps.`,
-    )
-  }
-
-  return [
+  const entries: MetadataRoute.Sitemap = [
     ...staticRoutes,
     ...categories.docs.map((category) => ({
       url: `${baseUrl}/category/${category.slug}`,
@@ -104,4 +95,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     })),
   ]
+
+  /**
+   * The 50,000 budget applies to the **file**, not to each query. Capping the
+   * three reads individually still allowed the combined total to overflow and
+   * emit a sitemap the protocol rejects, so the cut is made here, once, over
+   * everything.
+   *
+   * Static routes come first in the array and products last, so if this ever
+   * bites, the pages that matter most survive and the tail is what goes.
+   */
+  if (entries.length > SITEMAP_URL_LIMIT) {
+    payload.logger.warn(
+      `Sitemap has ${entries.length} URLs, over the ${SITEMAP_URL_LIMIT} protocol limit — truncating, so ${entries.length - SITEMAP_URL_LIMIT} public routes are NOT being advertised. Split into a sitemap index with generateSitemaps.`,
+    )
+
+    return entries.slice(0, SITEMAP_URL_LIMIT)
+  }
+
+  return entries
 }
