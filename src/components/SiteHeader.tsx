@@ -7,6 +7,7 @@ import type { Brand } from '../payload-types'
 import type { CategoryGroup } from '../lib/nav'
 import { ANNOUNCEMENTS, SITE_NAME, SITE_TAGLINE } from '../lib/site'
 import { CartButton } from './cart/CartButton'
+import { MobileNav } from './MobileNav'
 import { SearchForm } from './SearchForm'
 
 /**
@@ -70,8 +71,9 @@ export const SiteHeader = ({
           className="order-3 w-full menu:order-none menu:max-w-[560px] menu:flex-1"
         />
 
-        <div className="ml-auto flex shrink-0 items-center gap-2 menu:ml-0">
-          {/* The one client component in the header — everything else stays server-rendered. */}
+        <div className="ml-auto flex shrink-0 items-center gap-1 menu:ml-0">
+          {/* The only client components in the header — the rest stays server-rendered. */}
+          <MobileNav groups={groups} brands={brands} />
           <CartButton />
         </div>
       </div>
@@ -121,42 +123,10 @@ export const SiteHeader = ({
       </div>
     </nav>
 
-    <details className="border-b border-line bg-charcoal text-white menu:hidden">
-      <summary className="wrap cursor-pointer py-3 text-sm font-semibold">
-        Browse categories &amp; brands
-      </summary>
-      <div className="wrap pb-4">
-        {groups.map((group) => (
-          <div key={group.value} className="py-2">
-            <p className="py-1.5 text-[11px] font-bold tracking-[1px] text-[#FFC9CF] uppercase">
-              {group.label}
-            </p>
-            {group.categories.map((category) => (
-              <Link
-                key={category.id}
-                href={`/category/${category.slug}`}
-                className="block py-2 text-sm text-[#EDEDEE]"
-              >
-                {category.name}
-              </Link>
-            ))}
-          </div>
-        ))}
-        <div className="py-2">
-          <p className="py-1.5 text-[11px] font-bold tracking-[1px] text-[#FFC9CF] uppercase">
-            Shop by Brand
-          </p>
-          {brands.map((brand) => (
-            <Link
-              key={brand.id}
-              href={`/brand/${brand.slug}`}
-              className="block py-2 text-sm text-[#EDEDEE]"
-            >
-              {brand.name}
-            </Link>
-          ))}
-        </div>
-      </div>
-    </details>
+    {/*
+      M4's `<details>` accordion lived here as an explicit interim. It is now the
+      prototype's proper slide-out drawer, rendered by `MobileNav` alongside the
+      hamburger above (§8a.2 — the mobile menu has an approved reference).
+    */}
   </>
 )

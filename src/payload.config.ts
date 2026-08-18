@@ -30,6 +30,18 @@ if (!blobToken && process.env.NODE_ENV === 'production') {
 export default buildConfig({
   admin: {
     user: Users.slug,
+    /**
+     * Payload defaults to Gravatar for the account picture, which was the ONLY
+     * thing violating the M7 content-security policy — 19 blocked `img-src`
+     * requests across the admin, and a broken avatar in every view.
+     *
+     * Switched off rather than allow-listing gravatar.com in the CSP, because
+     * that fixes more than the CSP: the admin panel no longer sends a hash of
+     * the client's email address to a third party on every page load, and §5.1's
+     * "loosen only what the admin measurably needs" stays honoured — it needs
+     * nothing.
+     */
+    avatar: 'default',
     importMap: {
       baseDir: path.resolve(dirname),
     },
