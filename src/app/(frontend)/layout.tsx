@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import React from 'react'
 
 import { CartDrawer } from '@/components/cart/CartDrawer'
+import { MobileCartBar } from '@/components/cart/MobileCartBar'
 import { Toast } from '@/components/cart/Toast'
 import { SiteFooter } from '@/components/SiteFooter'
 import { SiteHeader } from '@/components/SiteHeader'
@@ -33,8 +34,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <SiteHeader groups={groups} brands={brands} />
         <main className="flex-1">{children}</main>
         <SiteFooter categories={categories} brands={brands} />
-        {/* Mounted once here so both are available from every page (§8a). */}
+        {/* Mounted once here so all three are available from every page (§8a). */}
         <CartDrawer />
+        <MobileCartBar />
         <Toast />
       </body>
     </html>

@@ -22,6 +22,13 @@ const STOCK: Record<Product['stockStatus'], { label: string; className: string }
   'on-order': { label: 'Available on order', className: 'bg-red-soft text-red-dark' },
 }
 
+/** schema.org availability (plan §9). `on-order` really is BackOrder — the shop sources it. */
+const AVAILABILITY: Record<Product['stockStatus'], string> = {
+  'in-stock': 'https://schema.org/InStock',
+  'out-of-stock': 'https://schema.org/OutOfStock',
+  'on-order': 'https://schema.org/BackOrder',
+}
+
 type PageProps = {
   params: Promise<{ slug: string }>
 }
@@ -66,8 +73,45 @@ export default async function ProductPage({ params }: PageProps) {
   const stock = STOCK[product.stockStatus]
   const hasDiscount = Boolean(product.compareAtPrice && product.compareAtPrice > product.price)
 
+  /**
+   * Product JSON-LD (plan §9). Availability maps from `stockStatus`; `on-order`
+   * is `BackOrder`, which is what it means — the shop sources it on request.
+   *
+   * Emitted with `JSON.stringify`, never string interpolation, so a product name
+   * containing `</script>` cannot break out. This is a `<script>` tag but not an
+   * inline *executable* one — `application/ld+json` is data, and the CSP's
+   * `script-src` does not gate it.
+   */
+  const summary = lexicalToPlainText(product.description)
+  const baseUrl = (process.env.NEXT_PUBLIC_SERVER_URL ?? '').replace(/\/+$/, '')
+
+  const jsonLd = JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.name,
+    ...(images[0] ? { image: images[0].url } : {}),
+    ...(brand ? { brand: { '@type': 'Brand', name: brand.name } } : {}),
+    ...(summary ? { description: summary } : {}),
+    offers: {
+      '@type': 'Offer',
+      price: product.price,
+      priceCurrency: 'KES',
+      availability: AVAILABILITY[product.stockStatus],
+      ...(baseUrl ? { url: `${baseUrl}/product/${product.slug}` } : {}),
+    },
+  }).replace(/</g, '\\u003c')
+
   return (
     <div className="wrap py-8">
+      {/*
+        Children, not `dangerouslySetInnerHTML`. §5.3's ban is aimed at CMS rich
+        text, but there is no reason to reach for it here at all: React emits a
+        script element's string child as raw text. `<` is escaped to `<`
+        anyway — still valid JSON, and it makes a `</script>` inside a product
+        name incapable of closing the tag.
+      */}
+      <script type="application/ld+json">{jsonLd}</script>
+
       <nav aria-label="Breadcrumb" className="mb-5 text-[13px] text-text-muted">
         <Link href="/" className="hover:text-red">
           Home

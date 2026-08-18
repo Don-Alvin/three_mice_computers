@@ -45,7 +45,11 @@ export const Toast = () => {
       // grid's own Add-to-cart buttons, so without this it would swallow taps on
       // them for its full 2s. The prototype has the same geometry and the same
       // latent problem; it just never got tapped through in a static demo.
-      className={`pointer-events-none fixed bottom-6 left-1/2 z-99 flex -translate-x-1/2 items-center gap-2.5 rounded-[11px] bg-ink px-5 py-3.5 text-sm font-semibold text-white shadow-card transition-all duration-[240ms] ${
+      //
+      // Raised to 88px on mobile to clear the sticky cart bar. Always correct:
+      // the toast only ever fires on an add, which is precisely when the cart is
+      // non-empty and the bar is therefore on screen.
+      className={`pointer-events-none fixed bottom-[88px] left-1/2 z-99 flex -translate-x-1/2 items-center gap-2.5 rounded-[11px] bg-ink px-5 py-3.5 text-sm font-semibold text-white shadow-card transition-all duration-[240ms] menu:bottom-6 ${
         notice ? 'visible translate-y-0 opacity-100' : 'invisible translate-y-5 opacity-0'
       }`}
     >
