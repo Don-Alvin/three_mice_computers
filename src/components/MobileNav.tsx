@@ -2,7 +2,7 @@
 
 import { Menu, X } from 'lucide-react'
 import Link from 'next/link'
-import React, { useCallback, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 
 import type { Brand } from '../payload-types'
 
@@ -18,6 +18,9 @@ import { useModalPanel } from '../lib/use-modal-panel'
  * The trigger lives here rather than in `SiteHeader` so the button and the panel
  * share one piece of state and the header stays a server component.
  */
+/** Only used if `--breakpoint-menu` cannot be read; keep in step with styles.css. */
+const MENU_BREAKPOINT_FALLBACK = 900
+
 export const MobileNav = ({
   groups,
   brands,
@@ -34,6 +37,46 @@ export const MobileNav = ({
   const close = useCallback(() => setIsOpen(false), [])
 
   useModalPanel({ isOpen, onClose: close, panel, initialFocus: closeButton })
+
+  /**
+   * Close when the viewport crosses into the desktop layout.
+   *
+   * This panel is `menu:hidden`, so above the breakpoint it is `display: none` —
+   * but `isOpen` would stay true, and `useModalPanel` would go on holding the
+   * body scroll lock and swallowing every Tab to force focus into a panel nobody
+   * can see. The page would be unscrollable and unkeyboardable with no visible
+   * control to recover, Escape aside.
+   *
+   * Not a theoretical resize: a tablet rotating from portrait to landscape
+   * crosses 900px, and so does desktop browser zoom.
+   */
+  useEffect(() => {
+    if (!isOpen) {
+      return
+    }
+
+    // Read the breakpoint from the same token the CSS uses, so the two cannot
+    // disagree; fall back only if the custom property is missing.
+    const token = getComputedStyle(document.documentElement)
+      .getPropertyValue('--breakpoint-menu')
+      .trim()
+    const width = Number.parseInt(token, 10) || MENU_BREAKPOINT_FALLBACK
+
+    const query = window.matchMedia(`(min-width: ${width}px)`)
+
+    // Only the transition is handled — no synchronous check is needed, because
+    // the trigger that sets `isOpen` is itself `menu:hidden` and therefore
+    // untappable above the breakpoint.
+    const onChange = (event: MediaQueryListEvent) => {
+      if (event.matches) {
+        close()
+      }
+    }
+
+    query.addEventListener('change', onChange)
+
+    return () => query.removeEventListener('change', onChange)
+  }, [isOpen, close])
 
   return (
     <>
