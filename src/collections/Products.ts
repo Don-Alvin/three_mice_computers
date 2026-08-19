@@ -20,7 +20,7 @@ const wholeShillings =
     }
 
     if (!Number.isInteger(value)) {
-      return `${label} must be a whole number of shillings — no decimals.`
+      return `${label} must be a whole number of shillings, no decimals.`
     }
 
     if (value < 0) {
@@ -160,7 +160,7 @@ export const Products: CollectionConfig = {
       options: stockStatusOptions,
       admin: {
         position: 'sidebar',
-        description: 'Status only — Phase 1 does not track quantities.',
+        description: 'Status only. Phase 1 does not track quantities.',
       },
     },
     {

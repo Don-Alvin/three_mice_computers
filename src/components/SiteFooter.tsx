@@ -5,6 +5,7 @@ import React from 'react'
 import type { Brand, Category } from '../payload-types'
 
 import { CONTACT_PLACEHOLDERS, SITE_DESCRIPTION, SITE_NAME } from '../lib/site'
+import { Logo } from './Logo'
 
 /**
  * Contact-row icons (plan §8a.1). The prototype draws these as emoji; drawn as
@@ -36,7 +37,10 @@ export const SiteFooter = ({
     <div className="wrap">
       <div className="grid gap-8 py-12 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr_1.2fr]">
         <div>
-          <span className="font-display text-xl font-extrabold text-white">{SITE_NAME}</span>
+          {/* All-white on ink: the brand red does not hold enough contrast
+              against #141414 to carry the wordmark (§12a logo, §8 tokens). */}
+          <Logo className="h-10 w-auto" tone="light" />
+          <span className="sr-only">{SITE_NAME}</span>
           <p className="my-3.5 max-w-[34ch] text-[13.5px] leading-relaxed text-[#9C9EA4]">
             {SITE_DESCRIPTION}
           </p>

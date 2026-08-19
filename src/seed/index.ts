@@ -132,7 +132,7 @@ const products: ProductSeed[] = [
     badge: 'hot',
     featured: true,
     description:
-      'Full HD IPS panel with a height-adjustable stand and thin bezels — comfortable for long working days.',
+      'Full HD IPS panel with a height-adjustable stand and thin bezels, comfortable for long working days.',
     specs: [
       { label: 'Size', value: '24 inches' },
       { label: 'Resolution', value: '1920 x 1080' },

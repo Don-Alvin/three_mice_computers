@@ -27,7 +27,6 @@ export default async function SearchPage({ searchParams }: PageProps) {
   const page = parsePage(query.page)
 
   const list = await searchProducts(term, { sort, page })
-  const basePath = `/search?q=${encodeURIComponent(term)}`
 
   return (
     <div className="wrap py-8">
@@ -40,13 +39,15 @@ export default async function SearchPage({ searchParams }: PageProps) {
       {term ? (
         <ProductListing
           list={list}
-          basePath={basePath}
+          basePath="/search"
+          // The term rides along as a param, never concatenated into the path.
+          baseParams={{ q: term }}
           sort={sort}
           emptyMessage={`Nothing matched “${term}”. Try a shorter word, or browse the categories above.`}
         />
       ) : (
         <p className="text-sm text-text-muted">
-          Type what you are looking for — a product name, or a keyword like “laptop” or “CCTV”.
+          Type what you are looking for: a product name, or a keyword like “laptop” or “CCTV”.
         </p>
       )}
     </div>
