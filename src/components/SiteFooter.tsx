@@ -4,7 +4,7 @@ import React from 'react'
 
 import type { Brand, Category } from '../payload-types'
 
-import { CONTACT_PLACEHOLDERS, SITE_DESCRIPTION, SITE_NAME } from '../lib/site'
+import { CONTACT, SITE_DESCRIPTION, SITE_NAME } from '../lib/site'
 import { Logo } from './Logo'
 
 /**
@@ -87,23 +87,26 @@ export const SiteFooter = ({
 
         <div>
           <h3 className="mb-4 font-display text-[15px] font-bold text-white">Get in touch</h3>
-          {/* Placeholders — real details are a client input, collected before launch. */}
+          {/*
+            The email row is not rendered. Phone, area and hours are the client's
+            real details, but the address is still `hello@example.co.ke`, and a
+            finished-looking footer printing an example.co.ke address is worse
+            than one with three rows instead of four - it invites mail nobody
+            receives. Restore the row the moment a real address lands; the icon
+            and the token are both still here for it.
+          */}
           <ul className="flex flex-col gap-2.5 text-[13.5px] text-[#B4B6BB]">
             <li className="flex items-start gap-2.5">
               <CONTACT_ICONS.phone {...iconProps} />
-              {CONTACT_PLACEHOLDERS.phone}
-            </li>
-            <li className="flex items-start gap-2.5">
-              <CONTACT_ICONS.email {...iconProps} />
-              {CONTACT_PLACEHOLDERS.email}
+              {CONTACT.phone}
             </li>
             <li className="flex items-start gap-2.5">
               <CONTACT_ICONS.location {...iconProps} />
-              {CONTACT_PLACEHOLDERS.location}
+              {CONTACT.location}
             </li>
             <li className="flex items-start gap-2.5">
               <CONTACT_ICONS.hours {...iconProps} />
-              {CONTACT_PLACEHOLDERS.hours}
+              {CONTACT.hours}
             </li>
           </ul>
         </div>
@@ -113,7 +116,6 @@ export const SiteFooter = ({
         <span>
           © {new Date().getFullYear()} {SITE_NAME}. All rights reserved.
         </span>
-        <span>Contact details are placeholders pending launch.</span>
       </div>
     </div>
   </footer>
