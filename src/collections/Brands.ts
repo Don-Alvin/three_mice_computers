@@ -36,7 +36,7 @@ export const Brands: CollectionConfig = {
       admin: {
         position: 'sidebar',
         description:
-          'Lower numbers show first, in the homepage brand strip and the footer. Curated merchandising order — biggest brands first, not alphabetical.',
+          'Lower numbers show first, in the brand nav and the footer. Curated merchandising order: biggest brands first, not alphabetical.',
       },
     },
   ],

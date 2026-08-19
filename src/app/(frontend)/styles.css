@@ -41,6 +41,39 @@
 
   --radius-card: 12px;
 
+  /* Hero carousel slide entrance. The base layer's prefers-reduced-motion block
+     below already disables every animation, so this needs no motion-safe guard;
+     the carousel's auto-advance is stopped separately in JS. */
+  --animate-hero-slide: hero-slide 0.45s ease-out;
+
+  /* Announcement bar. The track holds FOUR copies of the message list, so one
+     copy is exactly 25% of it: translating by that much lands copy 2 where copy
+     1 started and the loop is seamless. Change the copy count in SiteHeader and
+     this percentage has to change with it. */
+  --animate-marquee: marquee 34s linear infinite;
+
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+
+    to {
+      transform: translateX(-25%);
+    }
+  }
+
+  @keyframes hero-slide {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
   --shadow-card:
     0 1px 2px rgba(20, 20, 20, 0.06), 0 8px 24px rgba(20, 20, 20, 0.06);
 }

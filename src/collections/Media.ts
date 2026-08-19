@@ -50,7 +50,7 @@ export const Media: CollectionConfig = {
           req.file.size > MAX_UPLOAD_BYTES
         ) {
           throw new APIError(
-            'Image is too large. Please use an image under 5 MB — on a phone, share it at "Medium" size or compress it first.',
+            'Image is too large. Please use an image under 5 MB. On a phone, share it at "Medium" size or compress it first.',
             400,
           )
         }

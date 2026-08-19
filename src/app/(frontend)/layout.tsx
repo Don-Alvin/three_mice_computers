@@ -8,14 +8,17 @@ import { SiteFooter } from '@/components/SiteFooter'
 import { SiteHeader } from '@/components/SiteHeader'
 import { getBrands, getCategories } from '@/lib/catalogue'
 import { groupCategories } from '@/lib/nav'
-import { SITE_DESCRIPTION, SITE_NAME } from '@/lib/site'
+import { SITE_DESCRIPTION, SITE_NAME, SITE_TAGLINE } from '@/lib/site'
 
 import { archivo, inter } from './fonts'
 import './styles.css'
 
 export const metadata: Metadata = {
   title: {
-    default: `${SITE_NAME} — Computers & Electronics in Kenya`,
+    // Read from the token rather than repeated as a literal: the header dropped
+    // its visible tagline, so the title is now the only place it appears and a
+    // second copy would be the one that goes stale.
+    default: `${SITE_NAME} - ${SITE_TAGLINE}`,
     template: `%s | ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,

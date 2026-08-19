@@ -43,7 +43,7 @@ export default async function DealsPage({ searchParams }: PageProps) {
         list={list}
         basePath="/deals"
         sort={sort}
-        emptyMessage="No deals running right now — check back soon."
+        emptyMessage="No deals running right now. Check back soon."
       />
     </div>
   )

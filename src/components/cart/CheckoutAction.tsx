@@ -160,7 +160,7 @@ export const CheckoutAction = () => {
     return (
       <div>
         <p className="mb-3 rounded-xl bg-wa/12 px-4 py-3 text-[13.5px] font-semibold text-charcoal">
-          Your order is ready — send the message in WhatsApp to place it.
+          Your order is ready. Send the message in WhatsApp to place it.
         </p>
 
         {/*
@@ -249,7 +249,7 @@ export const CheckoutAction = () => {
 
       {phase.kind === 'changed' ? (
         <p role="alert" className="mt-2.5 text-center text-xs font-semibold text-red">
-          Your cart changed — check it above, then tap again to send.
+          Your cart changed. Check it above, then tap again to send.
         </p>
       ) : null}
 

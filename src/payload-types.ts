@@ -174,7 +174,7 @@ export interface Product {
       }[]
     | null;
   /**
-   * Status only — Phase 1 does not track quantities.
+   * Status only. Phase 1 does not track quantities.
    */
   stockStatus: 'in-stock' | 'out-of-stock' | 'on-order';
   /**
@@ -285,7 +285,7 @@ export interface Brand {
   slug: string;
   logo?: (number | null) | Media;
   /**
-   * Lower numbers show first, in the homepage brand strip and the footer. Curated merchandising order — biggest brands first, not alphabetical.
+   * Lower numbers show first, in the brand nav and the footer. Curated merchandising order: biggest brands first, not alphabetical.
    */
   order?: number | null;
   updatedAt: string;

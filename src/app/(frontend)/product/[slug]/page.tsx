@@ -42,7 +42,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const image = resolveImage(product.images?.[0]?.image, 'full')
-  const description = lexicalToPlainText(product.description) || `${product.name} — available now.`
+  const description = lexicalToPlainText(product.description) || `${product.name}, available now.`
 
   return {
     title: product.name,

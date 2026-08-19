@@ -1,5 +1,3 @@
-import { SITE_NAME } from './site'
-
 /**
  * WhatsApp order message (plan §7).
  *
@@ -10,6 +8,9 @@ import { SITE_NAME } from './site'
  * Note the currency prefix is **KES**, not the `KSh` used on screen. That is the
  * plan's message format verbatim — `KSh` is the shop's display style, `KES` reads
  * unambiguously in a chat thread that may be quoted back or read aloud.
+ *
+ * The line separator is a hyphen, not an em dash: §8a.0.6 bans em dashes from
+ * site copy, and the order message is copy the shop and the customer both read.
  */
 export type OrderLine = {
   name: string
@@ -19,8 +20,7 @@ export type OrderLine = {
   qty: number
 }
 
-const DIVIDER = '------------------------'
-
+const intro = 'Hi, I would like to order:'
 const amount = new Intl.NumberFormat('en-KE')
 
 const money = (value: number): string => `KES ${amount.format(value)}`
@@ -42,15 +42,12 @@ export const buildOrderMessage = ({
   const origin = baseUrl.replace(/\/+$/, '')
 
   const parts = [
-    `NEW ORDER — ${SITE_NAME}`,
-    DIVIDER,
-    // "× 2 — KES 3,000" is the LINE total, not the unit price: the plan's example
+    `${intro}`,
+    // "× 2 - KES 3,000" is the LINE total, not the unit price: the plan's example
     // totals 88,000 from 85,000 + 3,000 for a 2× item at 1,500.
     ...lines.map(
-      (line, index) =>
-        `${index + 1}. ${line.name} × ${line.qty} — ${money(line.price * line.qty)}`,
+      (line, index) => `${index + 1}. ${line.name} × ${line.qty} - ${money(line.price * line.qty)}`,
     ),
-    DIVIDER,
     `TOTAL: ${money(orderTotal(lines))}`,
   ]
 

@@ -16,16 +16,29 @@ import { ProductCard } from './ProductCard'
 export const ProductListing = ({
   list,
   basePath,
+  baseParams,
   sort,
   emptyMessage = 'No products here yet.',
 }: {
   list: ProductList
+  /** Path only. Anything after a `?` belongs in `baseParams`. */
   basePath: string
+  /**
+   * Query the listing must carry on every sort and page link, e.g. the search
+   * term. It exists because `basePath` used to be allowed to carry its own
+   * query string: `/search?q=dell` then had `?sort=price-asc` appended to it,
+   * producing `/search?q=dell?sort=price-asc`, and the whole tail was read back
+   * as the search term ("Nothing matched dell?sort=price-asc"). Sorting and
+   * pagination were both dead on /search as a result. Building one
+   * URLSearchParams from both sources removes the join, and the escaping, from
+   * the caller's hands.
+   */
+  baseParams?: Record<string, string>
   sort: ProductSort
   emptyMessage?: string
 }) => {
   const href = (params: { sort?: ProductSort; page?: number }) => {
-    const search = new URLSearchParams()
+    const search = new URLSearchParams(baseParams)
 
     const nextSort = params.sort ?? sort
     if (nextSort !== 'newest') {
