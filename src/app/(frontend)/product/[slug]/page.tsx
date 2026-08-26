@@ -1,7 +1,6 @@
 import type { SerializedEditorState } from '@payloadcms/richtext-lexical/lexical'
 import { RichText } from '@payloadcms/richtext-lexical/react'
 import type { Metadata } from 'next'
-import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import React from 'react'
@@ -9,6 +8,7 @@ import React from 'react'
 import type { Product } from '@/payload-types'
 
 import { AddToCartButton } from '@/components/cart/AddToCartButton'
+import { ProductGallery } from '@/components/ProductGallery'
 import { getProductBySlug } from '@/lib/catalogue'
 import { discountPercent, formatKES } from '@/lib/format'
 import { resolveImage } from '@/lib/media'
@@ -67,7 +67,6 @@ export default async function ProductPage({ params }: PageProps) {
     .map((entry) => resolveImage(entry.image, 'full'))
     .filter((image): image is NonNullable<typeof image> => image !== null)
 
-  const [primary, ...rest] = images
   const category = typeof product.category === 'object' ? product.category : null
   const brand = typeof product.brand === 'object' ? product.brand : null
   const stock = STOCK[product.stockStatus]
@@ -128,49 +127,7 @@ export default async function ProductPage({ params }: PageProps) {
 
       <div className="grid gap-8 lg:grid-cols-2">
         {/* ---- Gallery ---- */}
-        <div>
-          <div className="grid aspect-square place-items-center overflow-hidden rounded-2xl border border-line bg-surface">
-            {primary ? (
-              <Image
-                src={primary.url}
-                alt={primary.alt}
-                width={primary.width}
-                height={primary.height}
-                priority
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                className="h-full w-full object-contain"
-              />
-            ) : (
-              <span className="text-xs font-semibold tracking-[1px] text-[#B9BBC0] uppercase">
-                No photo yet
-              </span>
-            )}
-          </div>
-
-          {/*
-            Static thumbnail strip. Click-to-switch needs a client component;
-            deferred rather than shipped half-working. See summary.
-          */}
-          {rest.length > 0 ? (
-            <div className="mt-3 grid grid-cols-5 gap-2">
-              {images.map((image, index) => (
-                <div
-                  key={`${image.url}-${index}`}
-                  className="grid aspect-square place-items-center overflow-hidden rounded-lg border border-line bg-surface"
-                >
-                  <Image
-                    src={image.url}
-                    alt=""
-                    width={image.width}
-                    height={image.height}
-                    sizes="120px"
-                    className="h-full w-full object-contain"
-                  />
-                </div>
-              ))}
-            </div>
-          ) : null}
-        </div>
+        <ProductGallery images={images} name={product.name} />
 
         {/* ---- Detail ---- */}
         <div>
