@@ -149,7 +149,14 @@ export const SiteHeader = ({
               Shop by Brand
               <ChevronDown aria-hidden="true" size={14} strokeWidth={2.4} className="opacity-60" />
             </span>
-            <div className="invisible absolute top-full left-0 z-40 min-w-[240px] translate-y-1.5 rounded-b-xl bg-white p-2 opacity-0 shadow-card transition-all group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
+            {/*
+              Anchored right, unlike the category panels. This is the last item
+              in the bar, so `left-0` ran the 240px panel past the viewport edge
+              and put a horizontal scrollbar on the whole page at 1024px (1030px
+              of content in a 1009px viewport). `invisible` does not spare it:
+              a hidden element still contributes to scrollWidth.
+            */}
+            <div className="invisible absolute top-full right-0 z-40 min-w-[240px] translate-y-1.5 rounded-b-xl bg-white p-2 opacity-0 shadow-card transition-all group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
               {brands.map((brand) => (
                 <Link
                   key={brand.id}

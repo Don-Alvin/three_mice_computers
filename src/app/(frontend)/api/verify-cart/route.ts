@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 
 import { getPayloadClient } from '@/lib/payload'
+import { productSlug } from '@/lib/product'
 import { MAX_CART_LINES, type VerifiedItem } from '@/lib/verify-cart'
 
 /**
@@ -64,7 +65,7 @@ export async function POST(request: Request) {
   const items: VerifiedItem[] = result.docs.map((doc) => ({
     id: doc.id,
     name: doc.name,
-    slug: doc.slug,
+    slug: productSlug(doc),
     price: doc.price,
     stockStatus: doc.stockStatus,
   }))

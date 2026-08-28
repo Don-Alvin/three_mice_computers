@@ -65,6 +65,13 @@ const nextConfig: NextConfig = {
       {
         pathname: '/api/media/file/**',
       },
+      // Statically imported images (the hero banner) are emitted under this
+      // path with a content hash. `localPatterns` is an allow-list: once it is
+      // set, any local path NOT listed here is rejected by the image optimiser
+      // with a 400, so a static import needs this entry to render at all.
+      {
+        pathname: '/_next/static/media/**',
+      },
     ],
     // Media is served from Vercel Blob (plan §2). `images.domains` was removed
     // in Next 16, so this must be remotePatterns (plan §6).

@@ -41,7 +41,9 @@ export const AddToCartButton = ({
   const base =
     variant === 'detail'
       ? 'mt-6 w-full max-w-sm rounded-[11px] px-4 py-3.5 text-[15px]'
-      : 'mt-1.5 rounded-[9px] px-3 py-2.5 text-[13.5px]'
+      : // `w-full` is explicit: the card wraps this in a div so it is no longer a
+        // flex item stretching to the column, and a <button> sizes to its content.
+        'mt-1.5 w-full rounded-[8px] px-3 py-2 text-[12.5px]'
 
   if (stockStatus === 'out-of-stock') {
     return (

@@ -59,16 +59,21 @@ export const ProductGallery = ({ images, name }: { images: ResolvedImage[]; name
   return (
     <div onKeyDown={onKeyDown}>
       <div className="group relative grid aspect-square place-items-center overflow-hidden rounded-2xl border border-line bg-surface">
+        {/*
+          `fill` for the same reason as the product card: with width/height and
+          `h-full` a tall photo sizes the grid row to its own intrinsic height
+          and overflows this box, and the shopper inspecting a product closely
+          is exactly who must not be handed a cropped one.
+        */}
         <Image
           alt={current.alt || name}
-          className="animate-hero-slide h-full w-full object-contain"
-          height={current.height}
+          className="animate-hero-slide object-contain"
+          fill
           key={current.url}
           // The gallery is the page's LCP element.
           priority={active === 0}
           sizes="(max-width: 1024px) 100vw, 50vw"
           src={current.url}
-          width={current.width}
         />
 
         {hasMany ? (
@@ -118,7 +123,7 @@ export const ProductGallery = ({ images, name }: { images: ResolvedImage[]; name
             <button
               aria-current={index === active}
               aria-label={`Show image ${index + 1} of ${count}`}
-              className={`grid aspect-square cursor-pointer place-items-center overflow-hidden rounded-lg border bg-surface transition focus-visible:ring-2 focus-visible:ring-red focus-visible:outline-none ${
+              className={`relative grid aspect-square cursor-pointer place-items-center overflow-hidden rounded-lg border bg-surface transition focus-visible:ring-2 focus-visible:ring-red focus-visible:outline-none ${
                 index === active
                   ? 'border-red ring-1 ring-red'
                   : 'border-line hover:border-[#DADBDE]'
@@ -127,14 +132,7 @@ export const ProductGallery = ({ images, name }: { images: ResolvedImage[]; name
               onClick={() => setActive(index)}
               type="button"
             >
-              <Image
-                alt=""
-                className="h-full w-full object-contain"
-                height={image.height}
-                sizes="120px"
-                src={image.url}
-                width={image.width}
-              />
+              <Image alt="" className="object-contain" fill sizes="120px" src={image.url} />
             </button>
           ))}
         </div>

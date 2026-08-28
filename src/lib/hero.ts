@@ -1,6 +1,7 @@
 import type { Product } from '../payload-types'
 
 import { resolveImage, type ResolvedImage } from './media'
+import { productSlug } from './product'
 
 /**
  * Source for the homepage hero carousel (plan §8a.0.5).
@@ -69,7 +70,7 @@ export const pickHeroProducts = (
 
 export const toHeroSlide = (product: Product): HeroSlide => ({
   id: product.id,
-  slug: product.slug,
+  slug: productSlug(product),
   name: product.name,
   price: product.price,
   compareAtPrice: product.compareAtPrice ?? null,

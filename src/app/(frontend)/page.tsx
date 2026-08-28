@@ -16,10 +16,10 @@ import {
 export const revalidate = 300
 
 /**
- * Cards under the hero. Six fills two clean rows of three on desktop; the pool
+ * Cards under the hero. Eight fills two clean rows of four on desktop; the pool
  * read for the carousel is larger and this slices it.
  */
-const FEATURED_CARDS = 6
+const FEATURED_CARDS = 8
 
 /*
  * CLIENT REVISION (plan §8a.0.2): the homepage is the hero then featured
@@ -58,15 +58,15 @@ export default async function HomePage() {
         lives on /cart (M6). A button that looks live and does nothing is worse
         than one button that works.
       */}
-      <section className="wrap pt-7 pb-2">
+      <section className="wrap pt-3 pb-2">
         <HeroCarousel slides={slides} />
       </section>
 
       {/* ---- Featured: sourced from `featured: true` only (§8a.0.3) ---- */}
-      <section className="wrap scroll-mt-28 py-8 pb-10" id="featured">
+      <section className="wrap scroll-mt-28 py-5 pb-10" id="featured">
         <SectionHead href="/products" linkLabel="View all" title="Featured products" />
         {featured.length > 0 ? (
-          <div className="grid grid-cols-2 gap-4 min-[720px]:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3 min-[720px]:grid-cols-3 lg:grid-cols-4">
             {featured.slice(0, FEATURED_CARDS).map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}

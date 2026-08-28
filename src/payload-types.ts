@@ -131,9 +131,9 @@ export interface Product {
   id: number;
   name: string;
   /**
-   * Auto-filled from the name. Changing this changes the public URL.
+   * Leave blank to auto-fill from the name. Set it by hand only to override; changing it changes the public URL.
    */
-  slug: string;
+  slug?: string | null;
   description?: {
     root: {
       type: string;
@@ -252,9 +252,9 @@ export interface Category {
   id: number;
   name: string;
   /**
-   * Auto-filled from the name. Changing this changes the public URL.
+   * Leave blank to auto-fill from the name. Set it by hand only to override; changing it changes the public URL.
    */
-  slug: string;
+  slug?: string | null;
   /**
    * Which nav menu group this category appears under.
    */
@@ -280,9 +280,9 @@ export interface Brand {
   id: number;
   name: string;
   /**
-   * Auto-filled from the name. Changing this changes the public URL.
+   * Leave blank to auto-fill from the name. Set it by hand only to override; changing it changes the public URL.
    */
-  slug: string;
+  slug?: string | null;
   logo?: (number | null) | Media;
   /**
    * Lower numbers show first, in the brand nav and the footer. Curated merchandising order: biggest brands first, not alphabetical.

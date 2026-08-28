@@ -34,7 +34,12 @@ export const CartLine = ({
   return (
     <li className="flex gap-3 border-b border-line py-3.5 last:border-b-0">
       <div
-        className={`relative shrink-0 overflow-hidden rounded-[10px] border border-line bg-[repeating-linear-gradient(135deg,#fafafb_0_10px,#f2f3f5_10px_20px)] ${thumbSize}`}
+        className={
+          // Muted, matching the product cards. This box used to pad with a diagonal
+          // stripe pattern, which made the same photo sit on two different
+          // backgrounds depending on whether it was in a grid or the cart.
+          `relative shrink-0 overflow-hidden rounded-[10px] border border-line bg-muted ${thumbSize}`
+        }
       >
         {line.image ? (
           // `fill` because the stored cart holds only a URL (plan §7's CartItem
@@ -51,11 +56,7 @@ export const CartLine = ({
 
       <div className="min-w-0 flex-1">
         <h4 className="text-[13.5px] leading-[1.3] font-semibold">
-          <Link
-            href={`/product/${line.slug}`}
-            onClick={closeCart}
-            className="hover:text-red"
-          >
+          <Link href={`/product/${line.slug}`} onClick={closeCart} className="hover:text-red">
             {line.name}
           </Link>
         </h4>
@@ -68,11 +69,7 @@ export const CartLine = ({
           <p className="text-[11.5px] text-text-muted">{formatKES(line.price)} each</p>
         ) : null}
 
-        <QuantityStepper
-          qty={line.qty}
-          name={line.name}
-          onChange={(qty) => setQty(line.id, qty)}
-        />
+        <QuantityStepper qty={line.qty} name={line.name} onChange={(qty) => setQty(line.id, qty)} />
 
         <div>
           <button
