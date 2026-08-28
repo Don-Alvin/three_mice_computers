@@ -7,6 +7,8 @@ import React, { useCallback, useEffect, useState, useSyncExternalStore } from 'r
 
 import type { HeroSlide } from '../lib/hero'
 
+import heroBanner from '../app/hero-banner.jpg'
+
 import { formatKES } from '../lib/format'
 
 /** How long a slide holds before the carousel advances (plan §8a.0.5). */
@@ -40,13 +42,12 @@ const motionSnapshot = (): boolean => window.matchMedia(REDUCED_MOTION).matches
 const motionServerSnapshot = (): boolean => true
 
 /**
- * The homepage hero (plan §8a.0.5): the product photo is the hero, filling the
- * whole panel, with the proposition and the slide's own details laid over it.
+ * The homepage hero (plan §8a.0.5).
  *
- * The headline does NOT rotate. A carousel that swaps the page's h1 every six
- * seconds leaves the document with no stable subject for search engines and
- * reads as a moving target to a screen reader, so the proposition stays put and
- * the rotating product name sits under it as ordinary text.
+ * Laid out to the reference design the client supplied: fixed copy down the
+ * left, the product photo floating free on the right of the gradient, and the
+ * call to action sharing a row with the carousel controls. The panel keeps the
+ * brand red rather than the reference's navy, per §8's tokens.
  */
 export const HeroCarousel = ({ slides }: { slides: HeroSlide[] }) => {
   const count = slides.length
@@ -107,66 +108,85 @@ export const HeroCarousel = ({ slides }: { slides: HeroSlide[] }) => {
     <section
       aria-label="Featured products"
       aria-roledescription="carousel"
-      className="relative isolate overflow-hidden rounded-2xl bg-gradient-to-br from-red to-red-dark text-white"
+      /*
+       * The red gradient stays as the base layer even though a photo now covers
+       * it: the banner sits on a negative z-index, which paints above this
+       * background but below the copy, so a missing or slow banner degrades to
+       * the brand panel instead of to unreadable white-on-white.
+       */
+      className="relative isolate flex max-h-[calc(100svh-260px)] min-h-[300px] items-center overflow-hidden rounded-2xl bg-gradient-to-br from-red to-red-dark text-white sm:min-h-[340px] lg:min-h-[380px]"
       onBlur={() => setIsFocused(false)}
       onFocus={() => setIsFocused(true)}
       onKeyDown={onKeyDown}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {slide?.image ? (
-        <div className="absolute inset-0 -z-10 animate-hero-slide" key={slide.id}>
-          <Image
-            alt={slide.image.alt}
-            className="h-full w-full object-cover"
-            fill
-            // The hero fills the content column and is the page's likely LCP
-            // element, so the first slide is not lazy loaded.
-            priority={active === 0}
-            sizes="(max-width: 1200px) 100vw, 1200px"
-            src={slide.image.url}
-          />
-          {/*
-            Two scrims, not one, and the heavy one is red rather than neutral.
-            The horizontal pass keeps the left column readable on a wide screen
-            while leaving the right of the photo visible; the flat pass
-            underneath carries the mobile layout, where the text sits over the
-            middle of the image and a left-to-right gradient alone runs out of
-            cover. Tinting red keeps the brand in the hero: a neutral scrim over
-            a light product photo leaves the panel a grey slab with no colour in
-            it at all, which is exactly what the placeholder images show today.
-          */}
-          <span aria-hidden="true" className="absolute inset-0 bg-ink/30" />
-          <span
-            aria-hidden="true"
-            className="absolute inset-0 bg-gradient-to-r from-red-dark/95 via-red-dark/65 to-transparent"
-          />
-        </div>
-      ) : null}
+      {/*
+        One static banner for the whole hero, imported rather than served
+        from public/: a static import gets a content-hashed filename (so it can
+        be cached forever) and hands next/image the intrinsic dimensions.
+
+        The carousel rotates the TEXT
+        only, so this image never changes and is a plain LCP candidate: `fill` +
+        `priority`, decoded once, no per-slide swap.
+
+        `alt=""` because it is decoration. The hero's information is the heading
+        and the product line beside it, both real text; describing the banner
+        would only make a screen reader read scenery before the point.
+      */}
+      <Image
+        alt=""
+        className="-z-10 object-cover object-center"
+        fill
+        priority
+        sizes="(max-width: 1200px) 100vw, 1200px"
+        src={heroBanner}
+      />
 
       {/*
-        Announce the slide only when the shopper is driving. An auto-rotating
-        carousel that announces every tick talks over everything else a screen
-        reader user is doing, so the live region stays off until the rotation is
-        paused or motion is turned down.
+        Readability wash, weighted to the left and fading out before the right
+        edge so the products in the banner stay visible rather than being
+        greyed out behind a full-width scrim.
       */}
-      <div
-        aria-live={isPaused || prefersReducedMotion ? 'polite' : 'off'}
-        className="flex min-h-[440px] flex-col justify-center px-6 py-11 sm:px-10 lg:min-h-[480px]"
-      >
-        <p className="mb-3.5 text-xs font-bold tracking-[2px] uppercase opacity-90">
+      <span
+        aria-hidden="true"
+        className="absolute inset-0 -z-10 bg-gradient-to-r from-ink/90 via-ink/65 to-transparent"
+      />
+      {/*
+        Phones only. The horizontal wash above is weighted left so the products
+        on the right of the banner stay visible, which works while the copy sits
+        in the left column. Below `sm` the copy spans the full width and its
+        right edge lands on the bright laptop screen in the photo, so a flat
+        wash goes underneath it there and nowhere else.
+      */}
+      <span aria-hidden="true" className="absolute inset-0 -z-10 bg-ink/30 sm:hidden" />
+
+      <div className="relative w-full max-w-[620px] px-5 py-7 sm:px-8 sm:py-8 lg:px-10 lg:py-9">
+        <p className="mb-2.5 text-[11px] font-bold tracking-[2px] uppercase opacity-90 sm:text-xs">
           Trusted computer store
         </p>
-        <h1 className="mb-4 max-w-[15ch] font-display text-[clamp(28px,4vw,46px)] leading-[1.04] font-extrabold tracking-[-1px] drop-shadow-[0_2px_12px_rgba(0,0,0,.35)]">
+
+        {/*
+          The headline does NOT rotate. A carousel that swaps the page's h1
+          every six seconds leaves the document with no stable subject for
+          search engines and reads as a moving target to a screen reader, so
+          the proposition stays put and the product name sits under it.
+        */}
+        <h1 className="mb-2.5 max-w-[20ch] font-display text-[clamp(22px,2.7vw,34px)] leading-[1.05] font-extrabold tracking-[-0.8px] drop-shadow-[0_2px_10px_rgba(0,0,0,.45)]">
           Genuine tech, delivered across Kenya.
         </h1>
+
+        <p className="mb-3 max-w-[54ch] text-[12.5px] leading-tight opacity-90 sm:mb-3.5 sm:text-[14px] sm:leading-snug">
+          Laptops, CCTV, networking, printers and accessories: real stock, fair prices, warranty
+          backed.
+        </p>
 
         {slide ? (
           <div
             aria-label={`${active + 1} of ${count}`}
             aria-roledescription="slide"
-            className="animate-hero-slide max-w-[42ch]"
-            key={slide.id}
+            className="animate-hero-slide mb-4 border-l-2 border-white/35 pl-3.5"
+            key={`copy-${slide.id}`}
             role="group"
           >
             {slide.categoryName ? (
@@ -177,11 +197,11 @@ export const HeroCarousel = ({ slides }: { slides: HeroSlide[] }) => {
 
             {/*
               Stretched link: the ::after covers the whole positioned section, so
-              the entire slide is clickable through to its product (§8a.0.5)
-              without wrapping the prev/next buttons in an anchor, which would be
-              invalid markup. The controls below sit above it on z-index.
+              the banner area is clickable through to the product on show without
+              wrapping the prev/next buttons in an anchor, which would be invalid
+              markup. The controls below sit above it on z-index.
             */}
-            <p className="mt-1 font-display text-[22px] leading-tight font-bold sm:text-2xl">
+            <p className="mt-0.5 font-display text-base leading-snug font-bold sm:text-lg">
               <Link
                 className="after:absolute after:inset-0 after:z-10 hover:underline"
                 href={`/product/${slide.slug}`}
@@ -190,27 +210,22 @@ export const HeroCarousel = ({ slides }: { slides: HeroSlide[] }) => {
               </Link>
             </p>
 
-            <p className="mt-2.5 flex items-baseline gap-2.5">
-              <span className="font-display text-[26px] font-extrabold">
+            <p className="mt-1 flex items-baseline gap-2.5">
+              <span className="font-display text-[19px] font-extrabold sm:text-[22px]">
                 {formatKES(slide.price)}
               </span>
               {hasDiscount ? (
-                <span className="text-[15px] text-white/70 line-through">
+                <span className="text-[13px] text-white/70 line-through">
                   {formatKES(slide.compareAtPrice as number)}
                 </span>
               ) : null}
             </p>
           </div>
-        ) : (
-          <p className="max-w-[40ch] text-base opacity-95">
-            Laptops, CCTV, networking, printers and accessories: real stock, fair prices, warranty
-            backed.
-          </p>
-        )}
+        ) : null}
 
-        <div className="relative z-20 mt-7 flex flex-wrap items-center gap-4">
+        <div className="relative z-20 flex flex-wrap items-center gap-4">
           <Link
-            className="inline-flex items-center gap-2 rounded-[10px] bg-white px-5 py-3.5 text-[15px] font-bold text-ink transition hover:shadow-lg"
+            className="inline-flex items-center gap-2 rounded-[10px] bg-white px-5 py-3 text-[14px] font-bold text-ink shadow-[0_10px_24px_rgba(0,0,0,.28)] transition hover:-translate-y-0.5 hover:shadow-[0_14px_30px_rgba(0,0,0,.34)] sm:text-[15px]"
             href="#featured"
           >
             Shop featured
@@ -221,7 +236,7 @@ export const HeroCarousel = ({ slides }: { slides: HeroSlide[] }) => {
               <div className="flex items-center gap-2">
                 <button
                   aria-label="Previous product"
-                  className="grid h-10 w-10 place-items-center rounded-full border border-white/30 bg-white/10 text-white backdrop-blur-sm transition hover:bg-white/25 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
+                  className="grid h-10 w-10 place-items-center rounded-full border border-white/35 bg-white/15 text-white backdrop-blur-sm transition hover:bg-white/30 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
                   onClick={goPrevious}
                   type="button"
                 >
@@ -229,7 +244,7 @@ export const HeroCarousel = ({ slides }: { slides: HeroSlide[] }) => {
                 </button>
                 <button
                   aria-label="Next product"
-                  className="grid h-10 w-10 place-items-center rounded-full border border-white/30 bg-white/10 text-white backdrop-blur-sm transition hover:bg-white/25 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
+                  className="grid h-10 w-10 place-items-center rounded-full border border-white/35 bg-white/15 text-white backdrop-blur-sm transition hover:bg-white/30 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
                   onClick={goNext}
                   type="button"
                 >
@@ -243,7 +258,7 @@ export const HeroCarousel = ({ slides }: { slides: HeroSlide[] }) => {
                     aria-current={at === active}
                     aria-label={`Show product ${at + 1} of ${count}`}
                     className={`h-2 rounded-full transition-all focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none ${
-                      at === active ? 'w-6 bg-white' : 'w-2 bg-white/45 hover:bg-white/75'
+                      at === active ? 'w-6 bg-white' : 'w-2 bg-white/50 hover:bg-white/80'
                     }`}
                     key={dot.id}
                     onClick={() => goTo(at)}
@@ -255,6 +270,16 @@ export const HeroCarousel = ({ slides }: { slides: HeroSlide[] }) => {
           ) : null}
         </div>
       </div>
+
+      {/*
+        Announce the slide only when the shopper is driving. An auto-rotating
+        carousel that announces every tick talks over everything else a screen
+        reader user is doing, so the live region stays off until the rotation is
+        paused or motion is turned down.
+      */}
+      <span aria-live={isPaused || prefersReducedMotion ? 'polite' : 'off'} className="sr-only">
+        {slide ? `${slide.name}, ${formatKES(slide.price)}` : ''}
+      </span>
     </section>
   )
 }

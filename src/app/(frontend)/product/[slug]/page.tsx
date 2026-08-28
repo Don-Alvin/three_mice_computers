@@ -12,6 +12,7 @@ import { ProductGallery } from '@/components/ProductGallery'
 import { getProductBySlug } from '@/lib/catalogue'
 import { discountPercent, formatKES } from '@/lib/format'
 import { resolveImage } from '@/lib/media'
+import { productSlug } from '@/lib/product'
 import { lexicalToPlainText } from '@/lib/richtext'
 
 export const revalidate = 300
@@ -166,27 +167,8 @@ export default async function ProductPage({ params }: PageProps) {
             {stock.label}
           </p>
 
-          <AddToCartButton
-            variant="detail"
-            item={{
-              id: product.id,
-              slug: product.slug,
-              name: product.name,
-              price: product.price,
-              image: resolveImage(product.images?.[0]?.image, 'thumbnail')?.url ?? '',
-            }}
-            stockStatus={product.stockStatus}
-          />
-
-          {product.description ? (
-            <div className="mt-8 max-w-[60ch] text-[15px] leading-relaxed text-charcoal [&_a]:text-red [&_a]:underline [&_p]:mb-3">
-              {/* Payload's JSX serializer — never dangerouslySetInnerHTML (§5.3). */}
-              <RichText data={product.description as SerializedEditorState} />
-            </div>
-          ) : null}
-
           {product.specs && product.specs.length > 0 ? (
-            <section className="mt-8">
+            <section className="mt-6">
               <h2 className="mb-3 font-display text-lg font-bold">Specifications</h2>
               <dl className="overflow-hidden rounded-xl border border-line bg-surface">
                 {product.specs.map((spec, index) => (
@@ -201,6 +183,28 @@ export default async function ProductPage({ params }: PageProps) {
                   </div>
                 ))}
               </dl>
+            </section>
+          ) : null}
+
+          <AddToCartButton
+            variant="detail"
+            item={{
+              id: product.id,
+              slug: productSlug(product),
+              name: product.name,
+              price: product.price,
+              image: resolveImage(product.images?.[0]?.image, 'thumbnail')?.url ?? '',
+            }}
+            stockStatus={product.stockStatus}
+          />
+
+          {product.description ? (
+            <section className="mt-8">
+              <h2 className="mb-3 font-display text-lg font-bold">Product description</h2>
+              <div className="max-w-[60ch] text-[15px] leading-relaxed text-charcoal [&_a]:text-red [&_a]:underline [&_p]:mb-3">
+                {/* Payload's JSX serializer, never dangerouslySetInnerHTML (§5.3). */}
+                <RichText data={product.description as SerializedEditorState} />
+              </div>
             </section>
           ) : null}
         </div>

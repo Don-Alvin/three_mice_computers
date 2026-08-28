@@ -23,12 +23,25 @@ export const formatSlug = (value: string): string =>
 export const slugField = (sourceField = 'name'): Field => ({
   name: 'slug',
   type: 'text',
-  required: true,
+  /*
+   * NOT `required`, and that is the whole fix.
+   *
+   * The hook below has always been correct, but `required: true` made the admin
+   * refuse to submit a blank slug: required is enforced client side, in the
+   * browser, BEFORE the request is sent, while this hook runs server side once
+   * the request arrives. The field could therefore never be left blank for the
+   * hook to fill, which is exactly the "slugs are not auto-filling" symptom.
+   *
+   * Leaving it optional is safe because the hook always yields a value: `name`
+   * is itself required, so there is always a source to derive from on create,
+   * and on update `originalDoc` supplies it when a partial payload omits it.
+   */
   unique: true,
   index: true,
   admin: {
     position: 'sidebar',
-    description: 'Auto-filled from the name. Changing this changes the public URL.',
+    description:
+      'Leave blank to auto-fill from the name. Set it by hand only to override; changing it changes the public URL.',
   },
   hooks: {
     beforeValidate: [
