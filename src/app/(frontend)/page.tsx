@@ -11,6 +11,8 @@ import {
   rotationIndex,
   toHeroSlide,
 } from '@/lib/hero'
+import { jsonLdScript } from '@/lib/json-ld'
+import { CONTACT, SITE_NAME } from '@/lib/site'
 
 /** ISR, per plan §6. Also the period the hero rotation steps on (§8a.0.5). */
 export const revalidate = 300
@@ -47,8 +49,71 @@ export default async function HomePage() {
     toHeroSlide,
   )
 
+  const baseUrl = (process.env.NEXT_PUBLIC_SERVER_URL ?? '').replace(/\/+$/, '')
+
+  /**
+   * Site-wide JSON-LD, emitted once here rather than in the root layout: the
+   * layout renders on every route (including `/cart`, which robots.ts already
+   * excludes from crawling), and Organization/LocalBusiness/WebSite belong on
+   * the page a crawler actually lands on for the brand (plan §9, launch
+   * checklist Stage 2). `Product`/`BreadcrumbList` stay page-local (product,
+   * category, brand).
+   */
+  const organizationLd = jsonLdScript({
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: SITE_NAME,
+    ...(baseUrl ? { url: baseUrl, logo: `${baseUrl}/icon.svg` } : {}),
+  })
+
+  /**
+   * `ElectronicsStore` (a schema.org subtype of LocalBusiness) rather than the
+   * bare type: it is what the shop actually is, and Google's local-search
+   * results weight the specific type. `address` is the plain-text form schema.org
+   * allows (rather than a fabricated `PostalAddress` with fields the shop's
+   * contact details don't carry) since `CONTACT.location` is the one string of
+   * record (§4 of PROGRESS). `openingHoursSpecification` is the structured
+   * encoding of `CONTACT.hours` ("Mon-Sat, 8am-6pm") — if that string ever
+   * changes, this must change with it.
+   */
+  const localBusinessLd = jsonLdScript({
+    '@context': 'https://schema.org',
+    '@type': 'ElectronicsStore',
+    name: SITE_NAME,
+    telephone: CONTACT.phone,
+    address: CONTACT.location,
+    ...(baseUrl ? { url: baseUrl } : {}),
+    openingHoursSpecification: {
+      '@type': 'OpeningHoursSpecification',
+      dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+      opens: '08:00',
+      closes: '18:00',
+    },
+  })
+
+  /** Enables Google's sitelinks search box (launch checklist Stage 2). */
+  const websiteLd = jsonLdScript({
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: SITE_NAME,
+    ...(baseUrl
+      ? {
+          url: baseUrl,
+          potentialAction: {
+            '@type': 'SearchAction',
+            target: `${baseUrl}/search?q={search_term_string}`,
+            'query-input': 'required name=search_term_string',
+          },
+        }
+      : {}),
+  })
+
   return (
     <>
+      <script type="application/ld+json">{organizationLd}</script>
+      <script type="application/ld+json">{localBusinessLd}</script>
+      <script type="application/ld+json">{websiteLd}</script>
+
       {/*
         ---- Hero (§8a.0.5) ----
         The carousel IS the hero: each slide's photo fills the whole panel and

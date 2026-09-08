@@ -13,7 +13,15 @@ import { SITE_DESCRIPTION, SITE_NAME, SITE_TAGLINE } from '@/lib/site'
 import { archivo, inter } from './fonts'
 import './styles.css'
 
+const baseUrl = (process.env.NEXT_PUBLIC_SERVER_URL ?? '').replace(/\/+$/, '')
+
 export const metadata: Metadata = {
+  // Without this, a relative `openGraph.images` URL resolves against whatever
+  // host Next infers at build/preview time rather than the live domain, so a
+  // shared link's preview image can silently point at a Vercel preview URL.
+  // No live domain yet (§0 of the launch checklist) means this stays unset
+  // rather than pointing at a placeholder that would need re-checking later.
+  ...(baseUrl ? { metadataBase: new URL(baseUrl) } : {}),
   title: {
     // Read from the token rather than repeated as a literal: the header dropped
     // its visible tagline, so the title is now the only place it appears and a
@@ -22,6 +30,17 @@ export const metadata: Metadata = {
     template: `%s | ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
+  openGraph: {
+    siteName: SITE_NAME,
+    type: 'website',
+    locale: 'en_KE',
+  },
+  // 'summary', not 'summary_large_image': there is no 1200x630 OG share image
+  // yet (launch checklist §0, asset still pending from the client). Per-page
+  // `openGraph.images` (product pages) already override this default.
+  twitter: {
+    card: 'summary',
+  },
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

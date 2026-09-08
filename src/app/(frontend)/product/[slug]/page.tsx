@@ -11,6 +11,7 @@ import { AddToCartButton } from '@/components/cart/AddToCartButton'
 import { ProductGallery } from '@/components/ProductGallery'
 import { getProductBySlug } from '@/lib/catalogue'
 import { discountPercent, formatKES } from '@/lib/format'
+import { jsonLdScript } from '@/lib/json-ld'
 import { resolveImage } from '@/lib/media'
 import { productSlug } from '@/lib/product'
 import { lexicalToPlainText } from '@/lib/richtext'
@@ -85,7 +86,7 @@ export default async function ProductPage({ params }: PageProps) {
   const summary = lexicalToPlainText(product.description)
   const baseUrl = (process.env.NEXT_PUBLIC_SERVER_URL ?? '').replace(/\/+$/, '')
 
-  const jsonLd = JSON.stringify({
+  const jsonLd = jsonLdScript({
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: product.name,
@@ -99,7 +100,29 @@ export default async function ProductPage({ params }: PageProps) {
       availability: AVAILABILITY[product.stockStatus],
       ...(baseUrl ? { url: `${baseUrl}/product/${product.slug}` } : {}),
     },
-  }).replace(/</g, '\\u003c')
+  })
+
+  /**
+   * BreadcrumbList JSON-LD mirrors the visible breadcrumb nav below exactly
+   * (plan §9): Home, then the category if the product has one, then the
+   * product itself as the final crumb.
+   */
+  const breadcrumbItems = [
+    { name: 'Home', path: '/' },
+    ...(category ? [{ name: category.name, path: `/category/${category.slug}` }] : []),
+    { name: product.name, path: `/product/${product.slug}` },
+  ]
+
+  const breadcrumbLd = jsonLdScript({
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: breadcrumbItems.map((item, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: item.name,
+      ...(baseUrl ? { item: `${baseUrl}${item.path}` } : {}),
+    })),
+  })
 
   return (
     <div className="wrap py-8">
@@ -111,6 +134,7 @@ export default async function ProductPage({ params }: PageProps) {
         name incapable of closing the tag.
       */}
       <script type="application/ld+json">{jsonLd}</script>
+      <script type="application/ld+json">{breadcrumbLd}</script>
 
       <nav aria-label="Breadcrumb" className="mb-5 text-[13px] text-text-muted">
         <Link href="/" className="hover:text-red">
