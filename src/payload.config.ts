@@ -1,4 +1,5 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
+import { resendAdapter } from '@payloadcms/email-resend'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
 import path from 'path'
@@ -11,11 +12,28 @@ import { Categories } from './collections/Categories'
 import { Media } from './collections/Media'
 import { Products } from './collections/Products'
 import { Users } from './collections/Users'
+import { SITE_NAME } from './lib/site'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
 const blobToken = process.env.BLOB_READ_WRITE_TOKEN
+const resendApiKey = process.env.RESEND_API_KEY
+
+/**
+ * Sending domain for Payload's auth emails (password reset/verification),
+ * plan §3: `defaultFromAddress` on a Resend-verified domain, `defaultFromName`
+ * the shop name. Derived from `NEXT_PUBLIC_SERVER_URL` rather than a second
+ * hardcoded literal, so the two can't drift — Resend verifies the apex domain,
+ * so the `www.` host is stripped for the sender address.
+ */
+const serverHost = (() => {
+  try {
+    return new URL(process.env.NEXT_PUBLIC_SERVER_URL ?? '').hostname.replace(/^www\./, '')
+  } catch {
+    return ''
+  }
+})()
 
 // Without a token the Vercel Blob adapter silently falls back to the local
 // filesystem — which is ephemeral on Vercel, so uploads would vanish between
@@ -48,6 +66,24 @@ export default buildConfig({
   },
   collections: [Products, Categories, Brands, Media, Users],
   editor: lexicalEditor(),
+  /**
+   * Auth emails only (password reset/verification) — plan §3, wired at M8.
+   * `noreply@<domain>` needs the domain **verified in Resend** (DKIM/SPF) or
+   * delivery silently fails; that DNS step is ops, not code, so this stays
+   * omitted rather than half-wired until both `RESEND_API_KEY` and
+   * `NEXT_PUBLIC_SERVER_URL` are actually set — Payload falls back to logging
+   * an "email not configured" warning, same as every environment before M8.
+   * Never for order/notification email (plan §13 — out of scope permanently).
+   */
+  ...(resendApiKey && serverHost
+    ? {
+        email: resendAdapter({
+          apiKey: resendApiKey,
+          defaultFromAddress: `noreply@${serverHost}`,
+          defaultFromName: SITE_NAME,
+        }),
+      }
+    : {}),
   secret: process.env.PAYLOAD_SECRET || '',
   serverURL: process.env.NEXT_PUBLIC_SERVER_URL || '',
   typescript: {
