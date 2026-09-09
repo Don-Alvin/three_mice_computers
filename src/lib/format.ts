@@ -12,3 +12,13 @@ export const formatKES = (value: number): string => `KSh ${kesFormatter.format(v
 /** Discount percentage for a compare-at price, rounded like the prototype. */
 export const discountPercent = (price: number, compareAtPrice: number): number =>
   Math.round((1 - price / compareAtPrice) * 100)
+
+/**
+ * Displays a Kenyan number stored digits-only, international format, no `+`
+ * (the `NEXT_PUBLIC_WHATSAPP_NUMBER` convention, plan §14) the way `CONTACT.phone`
+ * is already hand-formatted: `+254 768 261 955`. Kenyan mobile numbers are always
+ * `254` plus 9 digits, so the grouping is fixed rather than generalized for
+ * country codes this shop does not have.
+ */
+export const formatKenyaPhone = (digits: string): string =>
+  `+${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6, 9)} ${digits.slice(9, 12)}`

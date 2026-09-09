@@ -14,18 +14,10 @@ export const SITE_TAGLINE = 'Innovation that Inspires'
 export const SITE_DESCRIPTION =
   'Genuine computers, CCTV, networking, printers and accessories, delivered across Kenya. Order online or on WhatsApp.'
 
-/**
- * Footer contact details. Phone, location and hours are the client's real
- * details and are rendered.
- *
- * `email` is still the obvious stand-in rather than a plausible invented one,
- * and the footer deliberately does NOT render it: an example.co.ke address in a
- * finished-looking footer invites mail nobody receives. Drop a real address in
- * and restore the row in `SiteFooter`.
- */
+/** Footer contact details. All real, all rendered. */
 export const CONTACT = {
   phone: '+254 731 215 060',
-  email: 'hello@example.co.ke',
+  email: 'sales@threemice.co.ke',
   location: 'Kisumu, Kenya',
   hours: 'Mon-Sat, 8am-6pm',
 } as const

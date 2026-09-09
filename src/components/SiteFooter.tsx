@@ -1,10 +1,13 @@
+import { SiFacebook, SiTiktok } from '@icons-pack/react-simple-icons'
 import { Clock, Mail, MapPin, Phone } from 'lucide-react'
 import Link from 'next/link'
 import React from 'react'
 
 import type { Brand, Category } from '../payload-types'
 
+import { formatKenyaPhone } from '../lib/format'
 import { CONTACT, SITE_DESCRIPTION, SITE_NAME } from '../lib/site'
+import { isUsableWhatsAppNumber } from '../lib/whatsapp'
 import { Logo } from './Logo'
 
 /**
@@ -19,11 +22,33 @@ const CONTACT_ICONS = {
   hours: Clock,
 }
 
+/**
+ * The shop's WhatsApp number, folded into the one phone line as `x / y` — both
+ * numbers are callable, so this is one contact method with two lines, not two
+ * separate ones. Read straight from the env var like `CheckoutAction` does,
+ * not from `CONTACT`: it is deployment config, not site copy, and the two
+ * numbers can legitimately differ. Guarded the same way checkout guards it: an
+ * unset or malformed value falls back to the phone number alone.
+ */
+const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER
+
+/**
+ * Real social handles (plan §12a resolved). Facebook and TikTok are the only
+ * two the client has — Instagram and the prototype's WhatsApp tile are not
+ * rendered, matching §8a.1's rule that a social link must go somewhere real.
+ */
+const SOCIALS = [
+  { name: 'Facebook', href: 'https://www.facebook.com/quadcommtech/', Icon: SiFacebook },
+  { name: 'TikTok', href: 'https://www.tiktok.com/@3miceke', Icon: SiTiktok },
+]
+
 const iconProps = {
   size: 15,
   strokeWidth: 1.9,
   'aria-hidden': true,
-  className: 'mt-0.5 shrink-0 text-red',
+  // White, not the red token: red at 15px on #141414 reads muddy next to the
+  // white social tiles beside it.
+  className: 'mt-0.5 shrink-0 text-white',
 } as const
 
 export const SiteFooter = ({
@@ -44,13 +69,21 @@ export const SiteFooter = ({
           <p className="my-3.5 max-w-[34ch] text-[13.5px] leading-relaxed text-[#9C9EA4]">
             {SITE_DESCRIPTION}
           </p>
-          {/*
-            The prototype's three social buttons are deliberately NOT rendered:
-            the client's real Facebook/Instagram/WhatsApp handles are still an
-            open input (plan §12a), and §8a.1 rules out social links that go
-            nowhere. Add them here once the handles land — the prototype styles
-            them as 36px rounded tiles, bg rgba(255,255,255,.08), red on hover.
-          */}
+          {/* 36px rounded tiles, bg rgba(255,255,255,.08), red on hover — the prototype's own `.socs` styling. */}
+          <div className="flex gap-2.5">
+            {SOCIALS.map(({ name, href, Icon }) => (
+              <a
+                key={name}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={name}
+                className="grid h-9 w-9 place-items-center rounded-[9px] bg-white/[0.08] text-white transition hover:bg-red"
+              >
+                <Icon size={18} />
+              </a>
+            ))}
+          </div>
         </div>
 
         <div>
@@ -87,18 +120,16 @@ export const SiteFooter = ({
 
         <div>
           <h3 className="mb-4 font-display text-[15px] font-bold text-white">Get in touch</h3>
-          {/*
-            The email row is not rendered. Phone, area and hours are the client's
-            real details, but the address is still `hello@example.co.ke`, and a
-            finished-looking footer printing an example.co.ke address is worse
-            than one with three rows instead of four - it invites mail nobody
-            receives. Restore the row the moment a real address lands; the icon
-            and the token are both still here for it.
-          */}
           <ul className="flex flex-col gap-2.5 text-[13.5px] text-[#B4B6BB]">
             <li className="flex items-start gap-2.5">
               <CONTACT_ICONS.phone {...iconProps} />
-              {CONTACT.phone}
+              {isUsableWhatsAppNumber(WHATSAPP_NUMBER)
+                ? `${CONTACT.phone} / ${formatKenyaPhone(WHATSAPP_NUMBER)}`
+                : CONTACT.phone}
+            </li>
+            <li className="flex items-start gap-2.5">
+              <CONTACT_ICONS.email {...iconProps} />
+              {CONTACT.email}
             </li>
             <li className="flex items-start gap-2.5">
               <CONTACT_ICONS.location {...iconProps} />
